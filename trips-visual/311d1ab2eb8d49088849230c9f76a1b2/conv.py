@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# this file is used to convert GPS data to deck.gl data
+
 import json
 count = 0
 max_line = 600000
