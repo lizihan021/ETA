@@ -5,6 +5,8 @@ Data
 gps_*
 order_*
 sharedstreets-matcher
+nmc-map-matcher
+mapmatching
 
 # Logs
 logs
