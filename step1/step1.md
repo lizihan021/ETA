@@ -148,3 +148,97 @@ Problems that we meet
 先用第二个生成一个 psql 数据库，里面有 edge 的信息，然后再用第一个，把 GPS map 到 edge 上 
 
 所以接下来有这么几件事可以做，1.了解一下openstreetmap 的画框取地图生成的文件如何使得 osm2pgrouting works，2.如果1失败了，了解一下交大的高性能计算，然后写个小报告给马成斌问问他的意见 3. 确认一下 map_matching 用的是HMM 算法。 4. 这个工具似乎只把 gps map 到了 edge 上，我们怎么根据这个拿到这辆车经过了那些 edge？
+
+
+
+Part of my bash history
+---
+
+Sorry I didn't doc how to install well.
+
+```
+sudo apt-get install expat
+sudo add-apt-repository ppa:georepublic/pgrouting-unstable
+sudo apt install pgrouting
+sudo apt-get update
+sudo apt install pgrouting
+wget -q https://www.postgresql.org/media/keys/ACCC4CF8.asc -O - | sudo apt-key add -
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
+sudo apt-get update
+sudo apt-get install postgresql postgresql-contrib
+sudo su - postgres
+sudo apt-get install postgresql-10-pgrouting
+sudo apt-get install
+sudo apt-get install postgresql-10 postgresql-server-dev-10 postgresql-10-postgis
+sudo apt-get install postgresql-9.6-pgrouting
+sudo -i -u postgres
+sudo apt-get install build-essential git-core cmake
+cd ~
+cd Desktop/
+cd 450
+wget -O pgrouting-2.6.0.tar.gz https://github.com/pgRouting/pgrouting/archive/v2.6.0.tar.gz
+tar xvfz pgrouting-2.6.0.tar.gz
+cd pgrouting-2.6.0
+mkdir build
+cd build
+cmake  ..
+make
+ls
+make
+cmake  ..
+psql
+sudo -i -u postgres
+cd ~
+ls
+cd Desktop/
+ls
+sudo add-apt-repository ppa:ubuntugis/ppa
+sudo apt-get update
+sudo apt-get install postgis
+sudo apt-get install libboost-all-dev
+sudo apt-get install expat
+sudo apt-get install libexpat1-dev
+sudo apt-get install libboost-dev
+sudo apt-get install libboost-program-options-dev
+sudo apt install libpqxx-dev
+git clone https://github.com/pgRouting/osm2pgrouting
+cd osm2pgrouting/
+cmake -H. -Bbuild
+cd build/
+make
+make install
+sudo make install
+createdb routing
+psql --dbname routing -c 'CREATE EXTENSION postgis'
+psql --dbname routing -c 'CREATE EXTENSION pgRouting'
+sudo -i -u postgres
+cd ~
+sudo su - postgres
+osm2pgrouting 
+osm2pgrouting --f map.osm --conf mapconfig.xml --dbname routing --username postgres --clean
+sudo -i -u postgres
+cd ~/Desktop/
+ls
+cd 450
+ls
+sudo -i -u postgres
+cd ~/Desktop/450/
+osm2pgrouting --f map.osm --conf mapconfig.xml --dbname routing --username tom --password myPassword --clean
+git clone https://github.com/mapillary/map_matching
+cd map_matching/
+ls
+cd ..
+osm2pgrouting --f map.osm --conf mapconfig.xml --dbname routing --username tom --password myPassword --clean
+osm2pgrouting --f china-latest.osm.pbf --conf mapconfig.xml --dbname routing --username tom --password myPassword
+osm2pgrouting --f andorra-latest.osm --conf mapconfig.xml --dbname routing --username tom --password myPassword --clean
+python ./examples/map_matcher.py "host=localhost port=5432 dbname=routing user=tom password=myPassword" routing < path_psql.json
+cd map_matching/
+python ./examples/map_matcher.py "host=localhost port=5432 dbname=routing user=tom password=myPassword" routing < path_psql.json
+python ./examples/map_matcher.py "host=localhost port=5432 dbname=routing user=tom password=myPassword" ways < path_psql.json
+htop
+cd map_matching/
+touch a.txt
+python ./examples/map_matcher.py "host=localhost port=5432 dbname=routing user=tom password=myPassword" ways < a.txt
+sudo -i -u postgres
+```
+
