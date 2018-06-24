@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# this file is used to convert GPS data to deck.gl data
+# this file is used to convert GPS data to map_matching data
 
 
 count = 0
