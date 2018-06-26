@@ -61,7 +61,7 @@ def main(argv):
 			tmp = line[:-1].split(",")
 			order_ID = tmp[1]
 			timestamp = tmp[2]
-			gps = map(float, tmp[-2:])
+			gps = [float(tmp[3]) - longitude_bias, float(tmp[4]) - latitude_bias]
 
 			if order_ID != prev_order_ID:
 
@@ -70,7 +70,8 @@ def main(argv):
 
 					for gps, timestamp, candidate in zip(gps_sequence, timestamp_sequence, candidates):
 						res_str +=   "{:.5f} ".format(float(tmp[3]) - longitude_bias) \
-								   + "{:.5f} ".format(float(tmp[4]) + 0) \
+								   + "{:.5f} ".format(float(tmp[4]) - latitude_bias) \
+								   + timestamp + " " \
 								   + "{0:.6f} {1:.6f} ".format(*map(float, (candidate.lon, candidate.lat))) \
 								   + "{0} ".format(candidate.edge.id) \
 								   + "{0:.2f} ".format(candidate.location) \
