@@ -8,6 +8,9 @@
 # In this example, the first "100" orders in "gps_20161106" will be splited. 
 # The results will be stored under dir "gps_20161106_match_results", and each 
 # file is an order.
+#
+# If No_of_orders = -1, all orders in the GPS file will be processed
+#
 # In each file, the data are stored as
 # gps_long | gps_lat | timestamp | matched_gps_long | matched_gps_lat | edge_ID | location | distance
 #
@@ -16,7 +19,6 @@ import os, errno, sys, psycopg2
 from examples.map_matcher import map_match
 
 def main(argv):
-	print argv
 	if len(argv) != 4:
 		print("usage: python split_and_match.py GPS_data_filename No_of_orders PSQL_URI ROAD_TABLE_NAME")
 		sys.exit()
@@ -45,7 +47,7 @@ def main(argv):
 			print("something wrong when creating dir!")
 			raise
 
-	print("created dir: " +  dirname)
+	print("results are stored in dir: " +  dirname)
 
 	filename = ""
 	prev_order_ID, order_ID = "", ""
@@ -69,8 +71,8 @@ def main(argv):
 					candidates = map_match(conn, road_table_name, gps_sequence, search_radius, max_route_distance)
 
 					for gps, timestamp, candidate in zip(gps_sequence, timestamp_sequence, candidates):
-						res_str +=   "{:.5f} ".format(float(tmp[3]) - longitude_bias) \
-								   + "{:.5f} ".format(float(tmp[4]) - latitude_bias) \
+						res_str +=   "{:.5f} ".format(gps[0]) \
+								   + "{:.5f} ".format(gps[1]) \
 								   + timestamp + " " \
 								   + "{0:.6f} {1:.6f} ".format(*map(float, (candidate.lon, candidate.lat))) \
 								   + "{0} ".format(candidate.edge.id) \
@@ -89,7 +91,7 @@ def main(argv):
 				res_str = ""
 				count += 1
 
-			if count > max_order_num:
+			if count > max_order_num and max_order_num != -1:
 				break
 
 			timestamp_sequence.append(timestamp)
