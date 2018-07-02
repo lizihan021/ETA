@@ -33,8 +33,8 @@ def main(argv):
 	max_route_distance = 200
 
 	# bias between Didi GPS and OpenStreetMap GPS
-	longitude_bias = 0
-	latitude_bias = 0
+	longitude_bias = 0.0026
+	latitude_bias = -0.0023
 
 	count = 0
 
