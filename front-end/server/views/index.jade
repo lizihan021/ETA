@@ -8,11 +8,13 @@ html
     script(src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.46.0/mapbox-gl.js')
     style.
         body { margin: 0; padding: 0; }
-        #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1 }
-        #go-button { position: absolute; top: 110px; left: 10px; width: 240px; z-index: 2 }
+        #map { position: absolute; top: 0; bottom: 0; width: 90%; z-index: 1 }
+        #go-button { position: absolute; top: 10px; left: 330px; width: 50px; height: 80px; z-index: 2 }
   body
     script(src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.2.0/mapbox-gl-geocoder.min.js')
     link(rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.2.0/mapbox-gl-geocoder.css' type='text/css')
+    script(src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.3/mapbox-gl-directions.js')
+    link(rel='stylesheet', href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.3/mapbox-gl-directions.css', type='text/css')
     div(id='map')
     button(class="button", id="go-button").
         Go
@@ -20,7 +22,7 @@ html
         mapboxgl.accessToken = 'pk.eyJ1IjoiaHc5NjAzIiwiYSI6ImNqajJwaHUzZTBucTUzdnRiMGN4NWE5Z2kifQ.BV0MuwZu5dkZBm1EOR5eGg';
         var map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/hw9603/cjj3wyqck1xb02qp5xo76twab',
+            style: 'mapbox://styles/mapbox/navigation-guidance-day-v2',
             center: [104.0647, 30.6109],
             zoom: 10
         });
@@ -35,46 +37,63 @@ html
             trackUserLocation: true
         }), 'bottom-right');
 
-        var geocoderStart = new MapboxGeocoder({
-            accessToken: mapboxgl.accessToken,
-            placeholder: "Choose starting point..."
-        });
-        var geocoderEnd = new MapboxGeocoder({
-            accessToken: mapboxgl.accessToken,
-            placeholder: "Choose destination..."
-        });
+        var mapDirections = new MapboxDirections({accessToken: mapboxgl.accessToken})
+        map.addControl(mapDirections, 'top-left');
 
-        map.addControl(geocoderStart, 'top-left');
-        map.addControl(geocoderEnd, 'top-left');
+        // var geocoderStart = new MapboxGeocoder({
+        //     accessToken: mapboxgl.accessToken,
+        //     placeholder: "Choose starting point..."
+        // });
+        // var geocoderEnd = new MapboxGeocoder({
+        //     accessToken: mapboxgl.accessToken,
+        //     placeholder: "Choose destination..."
+        // });
 
-        var markerStart;
-        var markerEnd;
+        // map.addControl(geocoderStart, 'top-left');
+        // map.addControl(geocoderEnd, 'top-left');
+
+        // var markerStart;
+        // var markerEnd;
         var srclat;
         var srclon;
         var dstlat;
         var dstlon;
 
         map.on('load', function() {
-            geocoderStart.on('result', function(ev) {
-                if (typeof markerStart !== "undefined") {
-                    markerStart.remove();
-                }
-                markerStart = new mapboxgl.Marker()
-                    .setLngLat(ev.result.geometry.coordinates)
-                    .addTo(map);
-                srclat = ev.result.geometry.coordinates[1];
-                srclon = ev.result.geometry.coordinates[0];
+            mapDirections.removeRoutes();
+            // mapDirections.setWaypoint(0, [103.96720,30.58696]);
+            mapDirections.on('route', function(){
+                console.log(mapDirections.getWaypoints());
+
             });
-            geocoderEnd.on('result', function(ev) {
-                if (typeof markerEnd !== "undefined") {
-                    markerEnd.remove();
-                }
-                markerEnd = new mapboxgl.Marker()
-                    .setLngLat(ev.result.geometry.coordinates)
-                    .addTo(map);
-                dstlat = ev.result.geometry.coordinates[1];
-                dstlon = ev.result.geometry.coordinates[0];
+            mapDirections.on('origin', function(){
+                srclat = mapDirections.getOrigin().geometry.coordinates[1];
+                srclon = mapDirections.getOrigin().geometry.coordinates[0];
             });
+            mapDirections.on('destination', function(){
+                dstlat = mapDirections.getDestination().geometry.coordinates[1];
+                dstlon = mapDirections.getDestination().geometry.coordinates[0];
+            });
+        //     geocoderStart.on('result', function(ev) {
+        //         if (typeof markerStart !== "undefined") {
+        //             markerStart.remove();
+        //         }
+        //         markerStart = new mapboxgl.Marker()
+        //             .setLngLat(ev.result.geometry.coordinates)
+        //             .addTo(map);
+        //         srclat = ev.result.geometry.coordinates[1];
+        //         srclon = ev.result.geometry.coordinates[0];
+        //     });
+        //     geocoderEnd.on('result', function(ev) {
+        //         if (typeof markerEnd !== "undefined") {
+        //             markerEnd.remove();
+        //         }
+        //         markerEnd = new mapboxgl.Marker()
+        //             .setLngLat(ev.result.geometry.coordinates)
+        //             .addTo(map);
+        //         dstlat = ev.result.geometry.coordinates[1];
+        //         dstlon = ev.result.geometry.coordinates[0];
+        //     });
         });
 
         $(document).ready(function(){
