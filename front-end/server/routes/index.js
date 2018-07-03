@@ -14,6 +14,7 @@ router.post('/upload', function(req, res, next) {
   console.log(req.body.srclon);
   console.log(req.body.dstlat);
   console.log(req.body.dstlon);
+  res.send("hahaha");
 });
 
 
