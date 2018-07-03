@@ -105,8 +105,10 @@ html
                   dstlat: dstlat,
                   dstlon: dstlon
                 },
-                function(data,status){
+                function(data, status){
                     alert("Status: " + status);
+                    console.log(data); // data is the fake file
+                    // TODO deal with data.
                 });
             });
         });
