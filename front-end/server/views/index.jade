@@ -8,7 +8,7 @@ html
     script(src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.46.0/mapbox-gl.js')
     style.
         body { margin: 0; padding: 0; }
-        #map { position: absolute; top: 0; bottom: 0; width: 90%; z-index: 1 }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1 }
         #go-button { position: absolute; top: 10px; left: 330px; width: 50px; height: 80px; z-index: 2 }
   body
     script(src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.2.0/mapbox-gl-geocoder.min.js')
@@ -58,13 +58,11 @@ html
         var srclon;
         var dstlat;
         var dstlon;
+        var layer;
 
         map.on('load', function() {
-            mapDirections.removeRoutes();
-            // mapDirections.setWaypoint(0, [103.96720,30.58696]);
             mapDirections.on('route', function(){
-                console.log(mapDirections.getWaypoints());
-
+                // mapDirections.removeRoutes();
             });
             mapDirections.on('origin', function(){
                 srclat = mapDirections.getOrigin().geometry.coordinates[1];
@@ -94,6 +92,32 @@ html
         //         dstlat = ev.result.geometry.coordinates[1];
         //         dstlon = ev.result.geometry.coordinates[0];
         //     });
+
+
+            layer = {
+                "id": "route",
+                "type": "line",
+                "source": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": []
+                        }
+                    }
+                },
+                "layout": {
+                    "line-join": "round",
+                    "line-cap": "round"
+                },
+                "paint": {
+                    "line-color": "#C05C58",
+                    "line-width": 8
+                }
+            };
+
         });
 
         $(document).ready(function(){
@@ -106,12 +130,21 @@ html
                   dstlon: dstlon
                 },
                 function(data, status){
-                    alert("Status: " + status);
-                    console.log(data); // data is the fake file
-                    // TODO deal with data.
+                    var gpspoints = data.split("\n");
+                    i = 0;
+                    gpspoints.forEach(function(element) {
+                        gpspoints[i] = element.split(" ");
+                        layer.source.data.geometry.coordinates.push([parseFloat(gpspoints[i][0]), parseFloat(gpspoints[i][1])]);
+                        i++;
+                    });
+                    console.log(layer);
+
+                    map.addLayer(layer);
                 });
             });
         });
+
+
 
 
 
