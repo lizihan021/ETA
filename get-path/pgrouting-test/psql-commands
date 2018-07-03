@@ -1,0 +1,13 @@
+\connect routing
+
+\d+ ways
+
+/* astar */
+""" SELECT * FROM 
+            pgr_aStar('SELECT gid AS id, source, target, cost, x1, y1, x2, y2 FROM ways', 
+            (%s), (%s), directed:=false, heuristic:=3);""" % (start_node, end_node)
+
+/* nearest vertex */
+""" SELECT * FROM ways_vertices_pgr
+        ORDER BY the_geom <-> ST_GeometryFromText('Point(%s %s)', 4326)
+        LIMIT 1;""" % (lon, lat)
