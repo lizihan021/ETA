@@ -32,6 +32,7 @@ node_modules
 # dotenv environment variables file(s)
 .env
 .env.*
+.pyc
 
 #Build generated
 dist/
