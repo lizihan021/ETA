@@ -159,14 +159,13 @@ git clone git@github.com:lizihan021/ETA.git
 
 sudo add-apt-repository ppa:ubuntugis/ppa
 sudo apt-get update
-sudo apt-get install postgis
+#sudo apt-get install postgis
 sudo apt-get install libboost-all-dev
 sudo apt-get install expat
 sudo apt-get install libexpat1-dev
 sudo apt-get install libboost-dev
 sudo apt-get install libboost-program-options-dev
 sudo apt install libpqxx-dev
-sudo apt install pgrouting
 wget -q https://www.postgresql.org/media/keys/ACCC4CF8.asc -O - | sudo apt-key add -
 sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
 sudo apt-get update
