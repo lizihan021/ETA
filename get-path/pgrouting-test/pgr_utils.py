@@ -2,11 +2,11 @@ import sys
 import psycopg2
 
 class path_edge:
-    def __init__(self, gid, x1, y1, x2, y2):
+    def __init__(self, gid, x1, y1, x2, y2, cost=0):
         self.edge_id = gid
         self.start_x, self.start_y = x1, y1
         self.end_x, self.end_y = x2, y2
-        self.edge_cost = 0
+        self.edge_cost = cost
 
 
     
@@ -42,12 +42,12 @@ def find_path(cur, start_node, end_node):
             break
         else:
             # query the gps coordinates of the edge
-            sql = "SELECT gid, source, target, x1, y1, x2, y2 FROM ways where gid=(%s)" % edge_id
+            sql = "SELECT gid, source, target, x1, y1, x2, y2, cost FROM ways where gid=(%s)" % edge_id
             cur.execute(sql)
             edge_row = cur.fetchall()[0]
-            [start_x, start_y, end_x, end_y] = edge_row[3:]
+            [start_x, start_y, end_x, end_y, cost] = edge_row[3:]
             # add the edge information in the path
-            path.append(path_edge(edge_id, start_x, start_y, end_x, end_y))
+            path.append(path_edge(edge_id, start_x, start_y, end_x, end_y, cost))
     return path
 
 def get_path(db_name, username, password, x1, y1, x2, y2):
@@ -61,13 +61,13 @@ def get_path(db_name, username, password, x1, y1, x2, y2):
 
     # find path using A*
     path = find_path(cur, start_node, end_node)
-    path_id = []
-    for edge in path:
-        path_id.append(edge.edge_id)
+    # path_id = []
+    # for edge in path:
+    #     path_id.append(edge.edge_id)
 
     # see path information
     # print len(path)
     # for edge in path:
     #     print "(edge id = %s, from %s, %s, to %s, %s)" % (edge.edge_id, edge.start_x, edge.start_y, edge.end_x, edge.end_y)
     
-    return path_id
+    return path
