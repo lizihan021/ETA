@@ -64,10 +64,5 @@ def get_path(db_name, username, password, x1, y1, x2, y2):
     # path_id = []
     # for edge in path:
     #     path_id.append(edge.edge_id)
-
-    # see path information
-    # print len(path)
-    # for edge in path:
-    #     print "(edge id = %s, from %s, %s, to %s, %s)" % (edge.edge_id, edge.start_x, edge.start_y, edge.end_x, edge.end_y)
     
     return path
