@@ -16,3 +16,5 @@ pg_ctl -D /lustre/home/acct-umjmcb/umjmcb/db -l logfile start     # start psql s
 psql -h localhost				# connect to psql.
 ```
 
+Handily available packages on spack
+https://spack.readthedocs.io/en/latest/package_list.html
