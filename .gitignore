@@ -4,9 +4,8 @@ deck.gl
 Data
 gps_*
 order_*
-sharedstreets-matcher
-nmc-map-matcher
-mapmatching
+dbfile
+logfile
 
 # Logs
 logs
