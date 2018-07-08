@@ -12,7 +12,8 @@ const DATA_URL = {
   BUILDINGS:
     'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/examples/trips/buildings.json', // eslint-disable-line
   TRIPS:
-    'http://localhost:8080/311d1ab2eb8d49088849230c9f76a1b2/path.json' // eslint-disable-line
+  'http://localhost:8080/fake_data/path.json' // eslint-disable-line
+  //  'http://localhost:8080/311d1ab2eb8d49088849230c9f76a1b2/path.json' // eslint-disable-line
   //   'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/examples/trips/trips.json' // eslint-disable-line
 };
 
