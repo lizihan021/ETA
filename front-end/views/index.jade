@@ -19,6 +19,70 @@ html
     button(class="button", id="go-button").
         Go
     script.
+        function _fillData(layer, data) {
+            var gpspoints = data.split("\n");
+            i = 0;
+            gpspoints.forEach(function(element) {
+                gpspoints[i] = element.split(" ");
+                if (gpspoints[i][0] && gpspoints[i][1]) {
+                    layer.source.data.geometry.coordinates.push([parseFloat(gpspoints[i][0]), parseFloat(gpspoints[i][1])]);
+                }
+                i++;
+            });
+            return layer;
+        }
+        function _drawLines(map, id, color, data) {
+            var layer = {
+                "id": id,
+                "type": "line",
+                "source": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": []
+                        }
+                    }
+                },
+                "layout": {
+                    "line-join": "round",
+                    "line-cap": "round"
+                },
+                "paint": {
+                    "line-color": color,
+                    "line-width": 8
+                }
+            };
+            map.addLayer(_fillData(layer, data));
+        };
+
+        function _drawPoints(map, id, color, data) {
+            var layer = {
+                "id": id,
+                "type": "circle",
+                "source": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": []
+                        }
+                    }
+                },
+                "layout": {
+                },
+                "paint": {
+                    "circle-color": color,
+                    "circle-radius": 8
+                }
+            };
+            map.addLayer(_fillData(layer, data));
+        };
+
         mapboxgl.accessToken = 'pk.eyJ1IjoiaHc5NjAzIiwiYSI6ImNqajJwaHUzZTBucTUzdnRiMGN4NWE5Z2kifQ.BV0MuwZu5dkZBm1EOR5eGg';
         var map = new mapboxgl.Map({
             container: 'map',
@@ -58,7 +122,6 @@ html
         var srclon;
         var dstlat;
         var dstlon;
-        var layer;
 
         map.on('load', function() {
             mapDirections.on('route', function(){
@@ -93,31 +156,6 @@ html
         //         dstlon = ev.result.geometry.coordinates[0];
         //     });
 
-
-            layer = {
-                "id": "route",
-                "type": "line",
-                "source": {
-                    "type": "geojson",
-                    "data": {
-                        "type": "Feature",
-                        "properties": {},
-                        "geometry": {
-                            "type": "LineString",
-                            "coordinates": []
-                        }
-                    }
-                },
-                "layout": {
-                    "line-join": "round",
-                    "line-cap": "round"
-                },
-                "paint": {
-                    "line-color": "#C05C58",
-                    "line-width": 8
-                }
-            };
-
         });
 
         $(document).ready(function(){
@@ -130,16 +168,15 @@ html
                   dstlon: dstlon
                 },
                 function(data, status){
-                    var gpspoints = data.split("\n");
-                    i = 0;
-                    gpspoints.forEach(function(element) {
-                        gpspoints[i] = element.split(" ");
-                        layer.source.data.geometry.coordinates.push([parseFloat(gpspoints[i][0]), parseFloat(gpspoints[i][1])]);
-                        i++;
-                    });
-                    console.log(layer);
+                    _drawLines(map, "route", "#C05C58", data);
+                    _drawPoints(map, "original_point", "#303CA8", data);
+                });
 
-                    map.addLayer(layer);
+                $.post("/getfakedata",
+                {
+                },
+                function(data, status){
+                    _drawPoints(map, "point", "#307C38", data);
                 });
             });
         });

@@ -57,12 +57,12 @@ CREATE USER tom WITH PASSWORD 'myPassword';
 
 cd ETA
 cd step1/osm2pgrouting
-osm2pgrouting --f chengdu.osm --conf mapconfig.xml --dbname routing --username tom --password myPassword --clean
+osm2pgrouting --f chengdu.osm --conf mapconfig_for_cars.xml --dbname routing --username tom --password myPassword --clean
 
 cd ../map_matching/
 sudo python setup.py install
 ## you might need to install some python dependency if the floowing line throws error.
-python ./examples/map_matcher.py "host=localhost port=5432 dbname=routing user=tom password=myPassword" ways < path_psql.json
+python ./examples/map_matcher.py "host=localhost port=5432 dbname=routing user=tom password=myPassword" ways < ../../data-process/path_psql.json
 
 ```
 
@@ -83,6 +83,12 @@ Location along the edge: 0.39
 Location along the edge: 0.68
                Distance: 0.00 meters
 ```
+
+##### Change log:
+
+1. Changed to use `mapconfig_for_cars.xml` instead of `mapconfig.xml`. 
+2. Moved map_matching fake data from map_matching folder to data-process folder.
+3. For front end generate data: `/usr/local/bin/python ./test_match.py "host=localhost port=5432 dbname=routing user=tom password=myPassword" ways < ../../data-process/9f2f5a3972df52464e93495dbd528c80.json > ../../data-process/9f2f5a3972df52464e93495dbd528c80_result.json `. 
 
 ##All the project that I searched
 
