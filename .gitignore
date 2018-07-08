@@ -6,6 +6,10 @@ gps_*
 order_*
 dbfile
 logfile
+data-process/*.json
+!data-process/path_psql.json
+*.pyc
+*.egg-info
 
 # Logs
 logs
