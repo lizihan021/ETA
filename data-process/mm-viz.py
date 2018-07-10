@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # this file is used to convert GPS data to map_matching data
-
+# useage: step1-viz.py gps_file max_line point_flag 
+import sys
 
 count = 0
 max_line = 600
 
 if __name__ == "__main__":
+    if len(sys.argv) != 4:
+
     res = []
     print("conv ...")
     res_str = ""
