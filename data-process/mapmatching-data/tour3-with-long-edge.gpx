@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" creator="Graphhopper" version="1.1" xmlns:gh="https://graphhopper.com/public/schema/gpx/1.1">
+
+<trk><trkseg>
+<trkpt lat="51.359723" lon="12.360108"><time>2015-02-09T20:53:01+00:00</time></trkpt>
+<trkpt lat="51.359621" lon="12.360243"><time>2015-02-09T20:53:03+00:00</time></trkpt>
+
+<trkpt lat="51.358591" lon="12.358584"><time>2015-02-09T20:53:29+00:00</time></trkpt>
+<trkpt lat="51.358189" lon="12.357876"><time>2015-02-09T20:53:42+00:00</time></trkpt>
+
+<trkpt lat="51.358007" lon="12.357403"><time>2015-02-09T20:53:43+00:00</time></trkpt>
+<trkpt lat="51.358627" lon="12.356612"><time>2015-02-09T20:53:56+00:00</time></trkpt>
+<trkpt lat="51.358709" lon="12.356511"><time>2015-02-09T20:53:58+00:00</time></trkpt></trkseg></trk></gpx>

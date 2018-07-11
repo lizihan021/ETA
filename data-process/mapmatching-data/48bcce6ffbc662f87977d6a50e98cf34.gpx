@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1" creator="gpx.py -- https://github.com/tkrajina/gpxpy">
+  <trk>
+    <trkseg>
+      <trkpt lat="104.07476" lon="30.65621">
+        <time>2016-11-06T19:58:03Z</time>
+      </trkpt>
+      <trkpt lat="104.07481" lon="30.65634">
+        <time>2016-11-06T19:58:06Z</time>
+      </trkpt>
+      <trkpt lat="104.07485" lon="30.65646">
+        <time>2016-11-06T19:58:09Z</time>
+      </trkpt>
+      <trkpt lat="104.07498" lon="30.65663">
+        <time>2016-11-06T19:58:15Z</time>
+      </trkpt>
+      <trkpt lat="104.07514" lon="30.65665">
+        <time>2016-11-06T19:58:18Z</time>
+      </trkpt>
+      <trkpt lat="104.07514" lon="30.65665">
+        <time>2016-11-06T19:58:21Z</time>
+      </trkpt>
+      <trkpt lat="104.07514" lon="30.65666">
+        <time>2016-11-06T19:58:24Z</time>
+      </trkpt>
+      <trkpt lat="104.07517" lon="30.65671">
+        <time>2016-11-06T19:58:27Z</time>
+      </trkpt>
+      <trkpt lat="104.07518" lon="30.65671">
+        <time>2016-11-06T19:58:30Z</time>
+      </trkpt>
+      <trkpt lat="104.07518" lon="30.65671">
+        <time>2016-11-06T19:58:33Z</time>
+      </trkpt>
+      <trkpt lat="104.07518" lon="30.65671">
+        <time>2016-11-06T19:58:36Z</time>
+      </trkpt>
+      <trkpt lat="104.07526" lon="30.65669">
+        <time>2016-11-06T19:58:39Z</time>
+      </trkpt>
+      <trkpt lat="104.07536" lon="30.65664">
+        <time>2016-11-06T19:58:42Z</time>
+      </trkpt>
+      <trkpt lat="104.0755" lon="30.65658">
+        <time>2016-11-06T19:58:45Z</time>
+      </trkpt>
+      <trkpt lat="104.07557" lon="30.65655">
+        <time>2016-11-06T19:58:48Z</time>
+      </trkpt>
+      <trkpt lat="104.07563" lon="30.65652">
+        <time>2016-11-06T19:58:51Z</time>
+      </trkpt>
+      <trkpt lat="104.07566" lon="30.65651">
+        <time>2016-11-06T19:58:54Z</time>
+      </trkpt>
+      <trkpt lat="104.07569" lon="30.6565">
+        <time>2016-11-06T19:58:57Z</time>
+      </trkpt>
+      <trkpt lat="104.07577" lon="30.65648">
+        <time>2016-11-06T19:59:00Z</time>
+      </trkpt>
+      <trkpt lat="104.07582" lon="30.65646">
+        <time>2016-11-06T19:59:03Z</time>
+      </trkpt>
+      <trkpt lat="104.07587" lon="30.65644">
+        <time>2016-11-06T19:59:06Z</time>
+      </trkpt>
+      <trkpt lat="104.07593" lon="30.65642">
+        <time>2016-11-06T19:59:09Z</time>
+      </trkpt>
+      <trkpt lat="104.07596" lon="30.65641">
+        <time>2016-11-06T19:59:12Z</time>
+      </trkpt>
+      <trkpt lat="104.07601" lon="30.6564">
+        <time>2016-11-06T19:59:15Z</time>
+      </trkpt>
+      <trkpt lat="104.07604" lon="30.65638">
+        <time>2016-11-06T19:59:18Z</time>
+      </trkpt>
+      <trkpt lat="104.0761" lon="30.65636">
+        <time>2016-11-06T19:59:21Z</time>
+      </trkpt>
+      <trkpt lat="104.07615" lon="30.65635">
+        <time>2016-11-06T19:59:24Z</time>
+      </trkpt>
+      <trkpt lat="104.07619" lon="30.65634">
+        <time>2016-11-06T19:59:27Z</time>
+      </trkpt>
+      <trkpt lat="104.07619" lon="30.65634">
+        <time>2016-11-06T19:59:30Z</time>
+      </trkpt>
+      <trkpt lat="104.07619" lon="30.65634">
+        <time>2016-11-06T19:59:33Z</time>
+      </trkpt>
+      <trkpt lat="104.07619" lon="30.65634">
+        <time>2016-11-06T19:59:36Z</time>
+      </trkpt>
+      <trkpt lat="104.07619" lon="30.65634">
+        <time>2016-11-06T19:59:39Z</time>
+      </trkpt>
+      <trkpt lat="104.07628" lon="30.6563">
+        <time>2016-11-06T19:59:42Z</time>
+      </trkpt>
+      <trkpt lat="104.07631" lon="30.6563">
+        <time>2016-11-06T19:59:45Z</time>
+      </trkpt>
+      <trkpt lat="104.07637" lon="30.65628">
+        <time>2016-11-06T19:59:48Z</time>
+      </trkpt>
+      <trkpt lat="104.07643" lon="30.65626">
+        <time>2016-11-06T19:59:51Z</time>
+      </trkpt>
+      <trkpt lat="104.07652" lon="30.65623">
+        <time>2016-11-06T19:59:54Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>
