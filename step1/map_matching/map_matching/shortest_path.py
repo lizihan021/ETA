@@ -86,6 +86,7 @@ def find_shortest_path(source_node, target_node, get_edges, max_path_cost=None):
             return _reconstruct_path(source_node, target_node, scanned_nodes)
         for adj_edge in get_edges(cur_node):
             assert adj_edge.start_node == cur_node
+            assert adj_edge.cost > 0
             adj_cost_sofar = cost_sofar + adj_edge.cost
             if adj_cost_sofar <= max_path_cost and adj_edge.end_node not in scanned_nodes:
                 heapq.heappush(pqueue, (adj_cost_sofar, adj_edge))

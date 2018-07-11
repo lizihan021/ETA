@@ -219,7 +219,9 @@ def main(argv):
     for candidate in candidates:
         # print '         Measurement ID: {0}'.format(candidate.measurement.id)
         # print '             Coordinate: {0:.6f} {1:.6f}'.format(*map(float, (candidate.measurement.lon, candidate.measurement.lat)))
-        print '{0:.6f} {1:.6f}'.format(*map(float, (candidate.lon, candidate.lat)))
+        print '{0:.6f} {1:.6f}'.format(*map(float, (candidate.lon, candidate.lat))),
+        print '{0}'.format(candidate.measurement.id),
+        print '{0}'.format(candidate.edge.id)
         # print '        Matched edge ID: {0}'.format(candidate.edge.id)
         # print 'Location along the edge: {0:.2f}'.format(candidate.location)
         # print '               Distance: {0:.2f} meters'.format(candidate.distance)

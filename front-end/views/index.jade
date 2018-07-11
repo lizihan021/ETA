@@ -31,6 +31,7 @@ html
             });
             return layer;
         }
+
         function _drawLines(map, id, color, data) {
             var layer = {
                 "id": id,
@@ -77,18 +78,70 @@ html
                 },
                 "paint": {
                     "circle-color": color,
-                    "circle-radius": 8
+                    "circle-radius": 5
                 }
             };
             map.addLayer(_fillData(layer, data));
         };
 
+        function _drawGeoJson(map, id, data) {
+            var layer = {
+                "id": id,
+                "type": "symbol",
+                "source": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": []
+                    }
+                },
+                "layout": {
+                    "text-field": "{title}",
+                    "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+                    "text-offset": [0, 0.6],
+                    "text-anchor": "top"
+                }
+            };
+            
+            var gpspoints = data.split("\n");
+            i = 0;
+            gpspoints.forEach(function(element) {
+                gpspoints[i] = element.split(" ");
+                if (gpspoints[i][0] && gpspoints[i][1] && gpspoints[i][2] && gpspoints[i][3]) {
+                    layer.source.data.features.push({
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [gpspoints[i][0], gpspoints[i][1]]
+                        },
+                        "properties": {
+                            "title": gpspoints[i][2] + "\n" + gpspoints[i][3]
+                        }
+                    });
+                }
+                else if (gpspoints[i][0] && gpspoints[i][1]) {
+                    layer.source.data.features.push({
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [gpspoints[i][0], gpspoints[i][1]]
+                        },
+                        "properties": {
+                            "title": i
+                        }
+                    });
+                }
+                i++;
+            });
+            map.addLayer(layer);
+        }
+
         mapboxgl.accessToken = 'pk.eyJ1IjoiaHc5NjAzIiwiYSI6ImNqajJwaHUzZTBucTUzdnRiMGN4NWE5Z2kifQ.BV0MuwZu5dkZBm1EOR5eGg';
         var map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/navigation-guidance-day-v2',
-            center: [104.0647, 30.6109],
-            zoom: 10
+            center: [104.0847, 30.6809],
+            zoom: 13
         });
 
         var nav = new mapboxgl.NavigationControl();
@@ -159,7 +212,7 @@ html
         });
 
         $(document).ready(function(){
-            $("button").click(function(){
+            // $("button").click(function(){
                 $.post("/upload",
                 {
                   srclat: srclat,
@@ -170,6 +223,7 @@ html
                 function(data, status){
                     _drawLines(map, "route", "#C05C58", data);
                     _drawPoints(map, "original_point", "#303CA8", data);
+                    _drawGeoJson(map, "origin-geo", data);
                 });
 
                 $.post("/getfakedata",
@@ -177,8 +231,9 @@ html
                 },
                 function(data, status){
                     _drawPoints(map, "point", "#307C38", data);
+                    _drawGeoJson(map, "geo", data);
                 });
-            });
+            // });
         });
 
 

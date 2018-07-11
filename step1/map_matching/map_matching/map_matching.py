@@ -20,8 +20,9 @@ except ImportError:
 # Default parameters copied from OSRM
 # See: https://github.com/Project-OSRM/osrm-backend/blob/master/routing_algorithms/map_matching.hpp
 # TODO: Need to optimize these parameters
-DEFAULT_BETA = 5.0
-DEFAULT_SIGMA_Z = 4.07
+DEFAULT_BETA = 1
+# DEFAULT_SIGMA_Z = 4.07
+DEFAULT_SIGMA_Z = 4
 DEFAULT_MAX_ROUTE_DISTANCE = 2000
 
 
@@ -162,7 +163,7 @@ class MapMatching(viterbi_path.ViterbiSearch):
                 continue
             target.path[source] = path
             delta = abs(route_distance - great_circle_distance)
-            costs.append(delta / self.beta)
+            costs.append(delta / self.beta) # changed
 
         # They should be equivalent (only for testing):
         # for cost, target in zip(costs, targets):
