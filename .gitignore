@@ -7,7 +7,9 @@ order_*
 dbfile
 logfile
 map-matching
+map-data
 data-process/**/*.json
+data-process/**/*.gpx
 !data-process/**/*-template.json
 *.pyc
 *.egg-info

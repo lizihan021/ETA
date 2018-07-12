@@ -8,7 +8,7 @@ import gpxpy.gpx
 import datetime
 
 count = 0
-max_line = 600
+max_line = 6000
 
 lon_off = -0.0025
 lat_off = 0.0024
@@ -36,7 +36,7 @@ if __name__ == "__main__":
                 break
             tmp = line[:-1].split(",")
             if tmp[1] == old_order_id or count == 1:
-                gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(tmp[3]) + lon_off, float(tmp[4]) + lat_off, time=datetime.datetime.fromtimestamp(int(tmp[2])) ))
+                gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(tmp[4]) + lat_off, float(tmp[3]) + lon_off, time=datetime.datetime.fromtimestamp(int(tmp[2])) ))
                 old_order_id = tmp[1]
             else:
                 f_w = open("./mapmatching-data/" + old_order_id + ".gpx", 'w')
@@ -50,6 +50,6 @@ if __name__ == "__main__":
                 # Create first segment in our GPX track:
                 gpx_segment = gpxpy.gpx.GPXTrackSegment()
                 gpx_track.segments.append(gpx_segment)
-                gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(tmp[3]) + lon_off, float(tmp[4]) + lat_off, time=datetime.datetime.fromtimestamp(int(tmp[2])) ))
+                gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(tmp[4]) + lat_off, float(tmp[3]) + lon_off, time=datetime.datetime.fromtimestamp(int(tmp[2])) ))
                 old_order_id = tmp[1]
 
