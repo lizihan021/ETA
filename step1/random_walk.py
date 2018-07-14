@@ -12,16 +12,11 @@ Meaning:
 	Half of the walks are forward along the edge, and the other half are backward
 
 Results:
-	Stored in dir "/random_walk_results"
+	Stored in dir "/random_walk_results_[rw_params]"
 	For each edge is stored in 
-		"/random_walk_results/[osm_id]_[source_osm]_[target_osm]_[for/backward]_[walk_num]_[step_num].txt"
+		"/random_walk_results_[rw_params]/[osm_id]_[source_osm]_[target_osm].p"
 	
 	The rows in txt are sorted descendingly according to the "# of times being visited"
-
-	Format in [osm_id].txt:
-	gid | osm_id   | source | target | source_osm | target_osm | # of times being visited
-	5	| 37130801 | 1395	| 1697	 | 5488540928 |	432442580  | 51
-
 """
 
 import psycopg2
@@ -64,9 +59,8 @@ def random_walk_for_one(dirname, gid, osm_id, walk_num, step_num, conn, table_na
 	cur.execute(stmt)
 	source_osm, target_osm = cur.fetchone()
 
-	fname = "{dirname}/{osm_id}_{source_osm}_{target_osm}_{walk_num}_{step_num}.p".format( \
-		dirname = dirname, osm_id = osm_id, source_osm = source_osm, target_osm = target_osm, \
-		direction = "forward", walk_num = walk_num, step_num = step_num)
+	fname = "{dirname}/{osm_id}_{source_osm}_{target_osm}.p".format( \
+		dirname = dirname, osm_id = osm_id, source_osm = source_osm, target_osm = target_osm)
 	if os.path.isfile(fname):
 		return
 
@@ -122,7 +116,7 @@ def random_walk_for_all(argv):
 		uri, table_name = "host=localhost port=5432 dbname=routing user=tom password=myPassword", "ways"
 
 	# create directory to store results
-	dirname = "random_walk_results"
+	dirname = "random_walk_results_{walk_num}_{step_num}".format(walk_num = walk_num, step_num = step_num)
 	try:
 		os.makedirs(dirname)
 	except OSError as e:
@@ -133,14 +127,15 @@ def random_walk_for_all(argv):
 
 	# fetch all edge ids from psql
 	conn = psycopg2.connect(uri)
-	stmt = "SELECT gid, osm_id FROM {table_name}".format(table_name = table_name)
+	stmt = "SELECT gid FROM {table_name}".format(table_name = table_name)
 	cur = conn.cursor()
 	cur.execute(stmt)
 
-	for i, (gid, osm_id) in enumerate(cur):
+	for i, gid in enumerate(cur):
 		if i%10 == 0 and i > 0:
 			print "processed {} egdes".format(i)
-		random_walk_for_one(dirname, gid, osm_id, walk_num, step_num, conn, table_name)
+		# Without reason, gid is in the format "(gid,)", so I use gid[0] below
+		random_walk_for_one(dirname, gid[0], osm_id, walk_num, step_num, conn, table_name)
 
 	conn.close()
 
