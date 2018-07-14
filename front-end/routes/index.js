@@ -43,4 +43,39 @@ router.post('/getfakedata', function(req, res, next) {
   });
 });
 
+router.post('/draw', function(req, res, next) {
+  var filePath = path.join(__dirname, '../../data-process/' + req.body.dir);
+
+
+  fs.readdir(filePath, function(err, filenames) {
+    if (!err) {
+      var objs = [];
+      filenames.forEach(function(filename) {
+        var oldfilename = filename;
+        filename = path.join(__dirname, '../../data-process/' + req.body.dir + '/' + filename);
+        console.log(filename);
+        fs.readFile(filename, {encoding: 'utf-8'}, function (err, data) {
+          if (!err) {
+            obj = JSON.parse(data);
+            obj.id = oldfilename;
+            console.log(obj);
+            objs.push(obj);
+            if (objs.length == filenames.length) {
+              res.send(objs);
+            }
+          } else {
+            console.log(err);
+            throw err;
+            res.status(404).send("Oops, something went wrong");
+          }
+        });
+      });
+    } else {
+      console.log(err);
+      throw err;
+      res.status(404).send("Oops, something went wrong");
+    }
+  });
+});
+
 module.exports = router;

@@ -102,7 +102,7 @@ html
                     "text-anchor": "top"
                 }
             };
-            
+
             var gpspoints = data.split("\n");
             i = 0;
             gpspoints.forEach(function(element) {
@@ -134,6 +134,15 @@ html
                 i++;
             });
             map.addLayer(layer);
+        }
+
+        function _drawFromFolder(map, objs) {
+            console.log("draw...");
+            console.log(objs);
+            objs.forEach(function(obj) {
+                console.log("drawing...");
+                map.addLayer(obj);
+            });
         }
 
         mapboxgl.accessToken = 'pk.eyJ1IjoiaHc5NjAzIiwiYSI6ImNqajJwaHUzZTBucTUzdnRiMGN4NWE5Z2kifQ.BV0MuwZu5dkZBm1EOR5eGg';
@@ -212,8 +221,8 @@ html
         });
 
         $(document).ready(function(){
-            // $("button").click(function(){
-                $.post("/upload",
+            $("button").click(function(){
+                /*$.post("/upload",
                 {
                   srclat: srclat,
                   srclon: srclon,
@@ -221,19 +230,32 @@ html
                   dstlon: dstlon
                 },
                 function(data, status){
-                    _drawLines(map, "route", "#C05C58", data);
-                    _drawPoints(map, "original_point", "#303CA8", data);
-                    _drawGeoJson(map, "origin-geo", data);
-                });
+                    // draw raw gps points
+                    // _drawLines(map, "route", "#C05C58", data);
+                    // _drawPoints(map, "original_point", "#303CA8", data);
+                    // _drawGeoJson(map, "origin-geo", data);
+                });*/
 
-                $.post("/getfakedata",
+                /*$.post("/getfakedata",
                 {
                 },
                 function(data, status){
+                    // draw mapped points
                     _drawPoints(map, "point", "#307C38", data);
                     _drawGeoJson(map, "geo", data);
+                });*/
+                $.post("/draw", {dir: "frontend-geo"}, function(data, status) {
+                    _drawFromFolder(map, data);
                 });
-            // });
+                $.post("/draw", {dir: "frontend-points"}, function(data, status) {
+                    _drawFromFolder(map, data);
+                });
+                $.post("/draw", {dir: "frontend-path"}, function(data, status) {
+                    _drawFromFolder(map, data);
+                });
+
+
+            });
         });
 
 
