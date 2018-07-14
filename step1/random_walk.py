@@ -64,13 +64,10 @@ def random_walk_for_one(dirname, gid, osm_id, walk_num, step_num, conn, table_na
 	cur.execute(stmt)
 	source_osm, target_osm = cur.fetchone()
 
-	forward_fname = "{dirname}/{osm_id}_{source_osm}_{target_osm}_{direction}_{walk_num}_{step_num}.txt".format( \
+	fname = "{dirname}/{osm_id}_{source_osm}_{target_osm}_{walk_num}_{step_num}.p".format( \
 		dirname = dirname, osm_id = osm_id, source_osm = source_osm, target_osm = target_osm, \
 		direction = "forward", walk_num = walk_num, step_num = step_num)
-	backward_fname = "{dirname}/{osm_id}_{source_osm}_{target_osm}_{direction}_{walk_num}_{step_num}.txt".format( \
-		dirname = dirname, osm_id = osm_id, source_osm = source_osm, target_osm = target_osm, \
-		direction = "backward", walk_num = walk_num, step_num = step_num)
-	if os.path.isfile(forward_fname) and os.path.isfile(backward_fname):
+	if os.path.isfile(fname):
 		return
 
 	node_edge_dict = {}
@@ -98,30 +95,20 @@ def random_walk_for_one(dirname, gid, osm_id, walk_num, step_num, conn, table_na
 		results.append([visited_num, (edge, is_forward)])
 	results.sort(reverse = True)
 
-	forward_res_str = ""
-	backward_res_str = ""
+	forward_res = []
+	backward_res = []
 	
 	for visited_num, (edge, is_forward) in results:
 		stmt = "SELECT gid, osm_id, source, target, source_osm, target_osm FROM {table_name} WHERE gid = {gid}".format(table_name = table_name, gid = edge)
 		cur.execute(stmt)
 		gid, osm_id, source, target, source_osm, target_osm = cur.fetchone()
 		if is_forward:
-			forward_res_str += "{gid}\t {osm_id}\t {source}\t {target}\t {source_osm}\t {target_osm}\t {visited_num}\n".format( \
-				gid = gid, osm_id = osm_id, source = source, target = target, \
-				source_osm = source_osm, target_osm = target_osm, visited_num = visited_num)
+			forward_res.append([gid, osm_id, source, target, source_osm, target_osm, visited_num])
 		else:
-			backward_res_str += "{gid}\t {osm_id}\t {source}\t {target}\t {source_osm}\t {target_osm}\t {visited_num}\n".format( \
-				gid = gid, osm_id = osm_id, source = source, target = target, \
-				source_osm = source_osm, target_osm = target_osm, visited_num = visited_num)
+			backward_res.append([gid, osm_id, source, target, source_osm, target_osm, visited_num])
 
-	f_w = open(forward_fname, 'w')
-	f_w.write(forward_res_str)
-	f_w.close()
-
-	f_w = open(backward_fname, 'w')
-	f_w.write(backward_res_str)
-	f_w.close()
-
+	with open(fname, 'w') as f:
+	    pickle.dump([forward_res, backward_res], f)
 
 def random_walk_for_all(argv):
 	if len(argv) != 2 and len(argv) != 4:
