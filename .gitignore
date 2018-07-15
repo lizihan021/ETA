@@ -10,7 +10,7 @@ map-matching
 map-data
 data-process/**/*.json
 data-process/**/*.gpx
-!data-process/**/*-template.json
+!data-process/**/*-template*.json
 *.pyc
 *.egg-info
 data-process/output_data

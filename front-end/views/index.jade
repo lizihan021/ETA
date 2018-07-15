@@ -133,6 +133,7 @@ html
                 }
                 i++;
             });
+            console.log(layer);
             map.addLayer(layer);
         }
 
@@ -236,22 +237,24 @@ html
                     // _drawGeoJson(map, "origin-geo", data);
                 });*/
 
-                /*$.post("/getfakedata",
+                $.post("/getfakedata",
                 {
                 },
                 function(data, status){
                     // draw mapped points
-                    _drawPoints(map, "point", "#307C38", data);
+                    //_drawPoints(map, "point", "#307C38", data);
                     _drawGeoJson(map, "geo", data);
-                });*/
+                });
+
                 $.post("/draw", {dir: "frontend-geo"}, function(data, status) {
-                    _drawFromFolder(map, data);
+                    //_drawFromFolder(map, data);
                 });
                 $.post("/draw", {dir: "frontend-points"}, function(data, status) {
-                    _drawFromFolder(map, data);
+                    // _drawFromFolder(map, data);
                 });
+
                 $.post("/draw", {dir: "frontend-path"}, function(data, status) {
-                    _drawFromFolder(map, data);
+                    //_drawFromFolder(map, data);
                 });
 
 
