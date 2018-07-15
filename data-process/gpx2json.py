@@ -34,4 +34,3 @@ if __name__ == '__main__':
         print("usage: python random_walk.py filename.gpx")
         sys.exit()
     gpxTojson(sys.argv[1]);
-gpxfilename = "mapmatching-data/9f2f5a3972df52464e93495dbd528c80.gpx.res.gpx"
