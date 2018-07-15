@@ -29,6 +29,8 @@ def get_edge_length(gid):
     return distance
 
 def check(filename):
+    print "----------------------"
+    print "order: ", filename
     edges = []
     with open(filename,'r') as f:
         for line in f:
@@ -36,7 +38,16 @@ def check(filename):
             print gid, timestamp, speed
             edges.append([int(gid), int(timestamp), float(speed)])
 
-    ordertime = edges[-1][1] - edges[0][1]
+    filename_list = filename.split('.')
+    filename = ".".join(filename_list[:-1])
+    json_name = filename + '.json'
+    raw_time = []
+    with open(json_name,'r') as f:
+        for line in f:
+            _, _, timestamp = line.split()
+            raw_time.append(int(timestamp))
+
+    ordertime = raw_time[-1] - raw_time[0]
     totaltime = 0.0
     for i, e in enumerate(edges):
         length = get_edge_length(e[0])
