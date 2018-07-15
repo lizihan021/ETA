@@ -52,6 +52,9 @@ router.post('/draw', function(req, res, next) {
       var objs = [];
       filenames.forEach(function(filename) {
         var oldfilename = filename;
+        if (filename.split('.').pop() !== "json") {
+          return;
+        }
         filename = path.join(__dirname, '../../data-process/' + req.body.dir + '/' + filename);
         console.log(filename);
         fs.readFile(filename, {encoding: 'utf-8'}, function (err, data) {
