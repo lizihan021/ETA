@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # this file is used to convert GPS data to map_matching data
-# useage: step1-viz.py gps_file max_line point_flag=1 geo_flag=1 path_flag=1
+# useage: 
 import sys
 
 if __name__ == "__main__":
