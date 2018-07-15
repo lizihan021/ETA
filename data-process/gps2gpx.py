@@ -23,6 +23,7 @@ gpx.tracks.append(gpx_track)
 gpx_segment = gpxpy.gpx.GPXTrackSegment()
 gpx_track.segments.append(gpx_segment)
 
+json_content = []
 
 if __name__ == "__main__":
     res = []
@@ -38,7 +39,12 @@ if __name__ == "__main__":
             if tmp[1] == old_order_id or count == 1:
                 gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(tmp[4]) + lat_off, float(tmp[3]) + lon_off, time=datetime.datetime.fromtimestamp(int(tmp[2])) ))
                 old_order_id = tmp[1]
+                json_content.append("{0:.6f} {1:.6f} {2}\n".format(float(tmp[3])+ lon_off,float(tmp[4])+ lat_off, int(tmp[2])))
             else:
+                f_json = open("./mapmatching-data/" + old_order_id + ".json", 'w')
+                f_json.write("".join(json_content))
+                f_json.close()
+
                 f_w = open("./mapmatching-data/" + old_order_id + ".gpx", 'w')
                 f_w.write(gpx.to_xml())
                 f_w.close()
@@ -52,4 +58,5 @@ if __name__ == "__main__":
                 gpx_track.segments.append(gpx_segment)
                 gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(float(tmp[4]) + lat_off, float(tmp[3]) + lon_off, time=datetime.datetime.fromtimestamp(int(tmp[2])) ))
                 old_order_id = tmp[1]
+                json_content = ["{0:.6f} {1:.6f} {2}\n".format(float(tmp[3])+ lon_off,float(tmp[4])+ lat_off, int(tmp[2]))]
 
