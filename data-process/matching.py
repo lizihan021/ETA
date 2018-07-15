@@ -235,6 +235,7 @@ def matching(filename):
                 continue
         else:
             # print "prev_edge_id != best_match[gps_idx]", prev_edge_id, best_match[gps_idx]
+            endtime = raw_gps[gps_idx][2]
             dt = endtime - starttime
             # print 'dt: ', dt
             if dt > 0:
@@ -250,7 +251,7 @@ def matching(filename):
             endpercent = startpercent
             timestamps[prev_edge_id] = starttime
 
-    # start second pass
+    # start second pass, which imputes the missing data
     # for edge_idx in range(len(edges)):
     #     print edge_idx, speeds[edge_idx]
 

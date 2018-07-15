@@ -1,6 +1,7 @@
+import os, sys
+sys.path.append('../')
 import gpxpy
 import gpxpy.gpx
-import os, sys
 
 
 def gpxTojson(gpxfilename):
