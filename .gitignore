@@ -1,7 +1,7 @@
 ### Node ###
 
 deck.gl
-Data
+data-process/Data
 gps_*
 order_*
 dbfile
@@ -13,7 +13,11 @@ data-process/**/*.gpx
 !data-process/**/*-template.json
 *.pyc
 *.egg-info
-
+data-process/output_data
+data-process/*.err
+data-process/*.out
+data-process/graph-cache
+data-process/gpxpy
 # Logs
 logs
 npm-debug.log*
