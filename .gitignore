@@ -10,10 +10,7 @@ map-matching
 map-data
 data-process/**/*.json
 data-process/**/*.gpx
-!data-process/**/*-template.json
-!data-process/frontend-geo/*
-!data-process/frontend-points/*
-!data-process/frontend-path/*
+!data-process/**/*-template*.json
 *.pyc
 *.egg-info
 
