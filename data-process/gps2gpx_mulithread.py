@@ -19,7 +19,7 @@ max_line = 6000
 lon_off = -0.0025
 lat_off = 0.0024
 
-ran = range(20161106, 20161111)
+ran = range(20161111, 20161122)
 percents = [0.0] * len(ran)
 
 def convert(filename, idx):

@@ -6,7 +6,7 @@
 #SBATCH --mail-user=Steven_Ge@sjtu.edu.cn
 #SBATCH --output=%j.out
 #SBATCH --error=%j.err
-#SBATCH -n 1
+#SBATCH -n 32
 #SBATCH --exclusive
 
 ulimit -l unlimited
