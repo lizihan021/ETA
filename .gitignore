@@ -19,6 +19,7 @@ data-process/*.err
 data-process/*.out
 data-process/graph-cache
 data-process/gpxpy
+package-lock.json
 # Logs
 logs
 npm-debug.log*
