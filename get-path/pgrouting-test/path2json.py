@@ -10,6 +10,7 @@ def process_json(input_json_file, output_json_file, path):
     coordinates = []
     for edge in path:
         coordinates.append([edge.start_x, edge.start_y])
+        coordinates.append([edge.end_x, edge.end_y])
     # print coordinates
     json_data["source"]["data"]["geometry"]["coordinates"] = coordinates
     

@@ -9,7 +9,7 @@ import path2json as p2j
 
 def main():
     db_name = "routing"
-    username = "lingfeng"
+    username = "tom"
     password = "myPassword"  
 
     # x1, y1 = 104.08175,30.67946
@@ -23,12 +23,12 @@ def main():
     path = pgr.get_path(db_name, username, password, x1, y1, x2, y2)
 
     # save edge information to file
-    path_file = open("path_seq", "w")
+    path_file = open("../get-path/pgrouting-test/path_seq", "w")
     for edge in path:
         path_file.write("%s %s %s\n"%(edge.start_x, edge.start_y, edge.edge_cost)) 
     path_file.close()
     # save path information to json
-    p2j.path2json("../../data-process/frontend-path/path-template.json", "../../data-process/frontend-path/astarpath.json", path)
+    p2j.path2json("../data-process/frontend-path/path-template.json", "../data-process/frontend-path/astarpath.json", path)
 
 if __name__ == "__main__":
     main()

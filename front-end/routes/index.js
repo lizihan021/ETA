@@ -103,7 +103,7 @@ router.post('/getpath', function(req, res, next) {
   });
 
   // TODO call a python function with the two points as input
-  var filePath = path.join(__dirname, '../../data-process/frontend-path/path.json');
+  var filePath = path.join(__dirname, '../../data-process/frontend-path/astarpath.json');
   // TODO need to check whether the file exist.
   fs.readFile(filePath, {encoding: 'utf-8'}, function(err,data){
     if (!err) {

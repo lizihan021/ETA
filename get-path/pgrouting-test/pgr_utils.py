@@ -12,7 +12,7 @@ class path_edge:
     
 def connect_db(db_name, user, password):
     try:
-        conn = psycopg2.connect(database=db_name, user=user, password=password)
+        conn = psycopg2.connect(database=db_name, user=user, host='localhost', password=password)
         return conn
     except:
         print "Fail to connect database", db_name
