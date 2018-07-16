@@ -1,6 +1,7 @@
 ### Node ###
 
 deck.gl
+Data/
 data-process/Data
 gps_*
 order_*
