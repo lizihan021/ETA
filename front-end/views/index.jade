@@ -148,7 +148,7 @@ html
         function _drawFromFolder(map, objs, draw_template = true) {
             console.log("draw...");
             objs.forEach(function(obj) {
-                console.log(obj);
+                //console.log(obj);
                 console.log("drawing...");
                 map.addLayer(obj);
             });
@@ -276,6 +276,7 @@ html
                   dstlon: dstlon
                 },
                 function(data, status){
+                    console.log(data);
                     _drawFromFolder(map, data);
                 });
             });

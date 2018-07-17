@@ -97,9 +97,11 @@ router.post('/getpath', function(req, res, next) {
   PythonShell.run("pgr_astar.py", options, function (err, results) {
       if (err) {
         console.log('Error: python error ' + err);
-        res.status(404).send("Oh uh, something went wrong");
+        //res.status(404).send("Oh uh, something went wrong");
       }
-      console.log('results: %j', results);
+      else {
+        console.log('results: %j', results);
+      }
   });
 
   // TODO call a python function with the two points as input
@@ -107,8 +109,9 @@ router.post('/getpath', function(req, res, next) {
   // TODO need to check whether the file exist.
   fs.readFile(filePath, {encoding: 'utf-8'}, function(err,data){
     if (!err) {
-      //console.log('received data: ' + data);
-      res.send([data]);
+      obj = JSON.parse(data);
+      obj.id = "astarpath.json";
+      res.send([obj]);
     } else {
       console.log(err);
       res.status(404).send("Oh uh, something went wrong");
