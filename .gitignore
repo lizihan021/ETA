@@ -9,6 +9,7 @@ dbfile
 logfile
 map-matching
 map-data
+data-process/mapmatching-data/*.txt
 data-process/**/*.json
 data-process/**/*.gpx
 !data-process/**/*-template*.json
