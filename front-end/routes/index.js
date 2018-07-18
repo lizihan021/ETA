@@ -47,20 +47,28 @@ router.post('/draw', function(req, res, next) {
   fs.readdir(filePath, function(err, filenames) {
     if (!err) {
       var objs = [];
+      var valid_file_count = 0;
+      filenames.forEach(function(filename) {
+        if (filename.split('.').pop() !== "json") {
+          return;
+        }
+        valid_file_count = valid_file_count + 1;
+      });
+      
       filenames.forEach(function(filename) {
         var oldfilename = filename;
         if (filename.split('.').pop() !== "json") {
           return;
         }
         filename = path.join(__dirname, '../../data-process/' + req.body.dir + '/' + filename);
-        console.log(filename);
         fs.readFile(filename, {encoding: 'utf-8'}, function (err, data) {
           if (!err) {
             obj = JSON.parse(data);
             obj.id = oldfilename;
-            console.log(obj);
             objs.push(obj);
-            if (objs.length == filenames.length) {
+            console.log(filename);
+            if (objs.length == valid_file_count) {
+              console.log("send " + req.body.dir);
               res.send(objs);
             }
           } else {
@@ -95,28 +103,30 @@ router.post('/getpath', function(req, res, next) {
   };
 
   PythonShell.run("pgr_astar.py", options, function (err, results) {
-      if (err) {
-        console.log('Error: python error ' + err);
-        //res.status(404).send("Oh uh, something went wrong");
+    if (err) {
+      console.log('Error: python error ' + err);
+      //res.status(404).send("Oh uh, something went wrong");
+    }
+    else {
+      console.log('results: %j', results);
+    }
+
+    // TODO call a python function with the two points as input
+    var filePath = path.join(__dirname, '../../data-process/frontend-path/astarpath.json');
+    // TODO need to check whether the file exist.
+    fs.readFile(filePath, {encoding: 'utf-8'}, function(err,data){
+      if (!err) {
+        obj = JSON.parse(data);
+        obj.id = "astarpath.json";
+        res.send([obj]);
+      } else {
+        console.log(err);
+        res.status(404).send("Oh uh, something went wrong");
       }
-      else {
-        console.log('results: %j', results);
-      }
+    });
   });
 
-  // TODO call a python function with the two points as input
-  var filePath = path.join(__dirname, '../../data-process/frontend-path/astarpath.json');
-  // TODO need to check whether the file exist.
-  fs.readFile(filePath, {encoding: 'utf-8'}, function(err,data){
-    if (!err) {
-      obj = JSON.parse(data);
-      obj.id = "astarpath.json";
-      res.send([obj]);
-    } else {
-      console.log(err);
-      res.status(404).send("Oh uh, something went wrong");
-    }
-  });
+  
 });
 
 module.exports = router;
