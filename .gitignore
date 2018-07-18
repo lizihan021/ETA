@@ -19,7 +19,6 @@ data-process/*.err
 data-process/*.out
 data-process/graph-cache
 data-process/gpxpy
-get-path/pgrouting-test/path_seq
 package-lock.json
 get-path/pgrouting-test/path_seq
 
