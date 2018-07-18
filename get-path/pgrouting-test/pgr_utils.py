@@ -30,7 +30,7 @@ def find_path(cur, start_node, end_node):
     sql = """ 
             SELECT * FROM 
             pgr_aStar('SELECT gid AS id, source, target, cost, x1, y1, x2, y2 FROM ways', 
-            (%s), (%s), directed:=false, heuristic:=3);""" % (start_node, end_node)
+            (%s), (%s), directed:=true, heuristic:=3);""" % (start_node, end_node)
     cur.execute(sql)
 
     rows = cur.fetchall()
