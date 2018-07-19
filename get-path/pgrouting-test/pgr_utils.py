@@ -12,7 +12,7 @@ class path_edge:
     
 def connect_db(db_name, user, password):
     try:
-        conn = psycopg2.connect(database=db_name, user=user, password=password)
+        conn = psycopg2.connect(database=db_name, user=user, host='localhost', password=password)
         return conn
     except:
         print "Fail to connect database", db_name
@@ -30,7 +30,7 @@ def find_path(cur, start_node, end_node):
     sql = """ 
             SELECT * FROM 
             pgr_aStar('SELECT gid AS id, source, target, cost, x1, y1, x2, y2 FROM ways', 
-            (%s), (%s), directed:=false, heuristic:=3);""" % (start_node, end_node)
+            (%s), (%s), directed:=true, heuristic:=3);""" % (start_node, end_node)
     cur.execute(sql)
 
     rows = cur.fetchall()
