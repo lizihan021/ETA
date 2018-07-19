@@ -15,9 +15,9 @@ Results:
     output the edge speed data in a txt file, that will be used for CNN training
 
 In each edge speed txt file, the data are stored as
-edge_id | osm_id  | timestamp | speed | source_osm_id | target_osm_id | source | target | direction |
-int     | int     | int       | float | int           | int           | int    | int    |    bool   |
-1       | 5131313 | 2016-11-
+gid | osm_id  | timestamp | speed | source_osm | target_osm | source | target | direction |
+int | int     | int       | float | int        | int        | int    | int    |    bool   |
+1   | 5131313 | 2016-11-
 
 
 """
