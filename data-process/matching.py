@@ -31,6 +31,8 @@ import numpy as np
 
 gps_error = 0.000001
 
+FNULL = open(os.devnull, 'w')
+
 # datalist is 1-D data list, nullValue is the value which represent that the data is missing
 def impute_list(datalist, nullValue):
     for idx in range(len(datalist)):
@@ -92,9 +94,14 @@ def get_percent(cur, lon, lat, gid):
     return 0
 
 def matching(filename):
+    name_list = filename.split('.')
+    txtname = "".join(name_list[0:-1]) + ".txt"
+    if os.path.isfile(txtname):
+        print txtname, " exist!"
+        return
     # print filename
     # call graphopper to match the most possible sequence
-    call(['java', '-jar', 'map-matching/matching-web/target/graphhopper-map-matching-web-0.11-SNAPSHOT.jar', 'match', filename])
+    call(['java', '-jar', 'map-matching/matching-web/target/graphhopper-map-matching-web-0.11-SNAPSHOT.jar', 'match', filename], stdout=FNULL)
     # convert the match results in gpx file to json file
     gpxTojson(filename+'.res.gpx')
     gpxTojson(filename+'.edge.gpx')
@@ -107,7 +114,7 @@ def matching(filename):
             # print i, lat, lon
             gps_edges.append([float(lon), float(lat)])
 
-    call(['rm', filename+'.edge.json'])
+    # call(['rm', filename+'.edge.json'])
     # fetch the edges from psql with matched start node and end node
     uri = "host=localhost port=5432 dbname=routing user=tom password=myPassword"
     conn = psycopg2.connect(uri)
@@ -285,3 +292,6 @@ if __name__ == '__main__':
     print "number of files to convert:", num_files
     for i in range(num_files):
         matching(sys.argv[1 + i]);
+        print_str = "\r{0}/{1} {2:.3f}%".format(i+1, num_files, 100.0*float(i+1)/float(num_files))
+        sys.stdout.write(print_str)
+        sys.stdout.flush()
