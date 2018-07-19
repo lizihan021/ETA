@@ -24,6 +24,7 @@ import os, errno, sys
 import random
 import pickle
 
+"""
 def get_nodes(edge, edge_node_dict, conn, table_name):
 	if edge in edge_node_dict:
 		return edge_node_dict[edge]
@@ -34,30 +35,28 @@ def get_nodes(edge, edge_node_dict, conn, table_name):
 	source, target = cur.fetchone()
 	edge_node_dict[edge] = (source, target)
 	return (source, target)
+"""
 
 def get_edges(node, is_forward, node_edge_dict, conn, table_name):
 	if (node, is_forward) in node_edge_dict:
 		return node_edge_dict[(node, is_forward)]
 
 	if is_forward:
-		stmt = "SELECT gid FROM {table_name} WHERE source = {source}".format(table_name = table_name, source = node)
+		stmt = "SELECT osm_id, source_osm, target_osm FROM {table_name} WHERE source_osm = {source}".format(table_name = table_name, source = node)
 	else:
-		stmt = "SELECT gid FROM {table_name} WHERE target = {target}".format(table_name = table_name, target = node)
+		stmt = "SELECT osm_id, source_osm, target_osm FROM {table_name} WHERE target_osm = {target}".format(table_name = table_name, target = node)
 
 	cur = conn.cursor()
 	cur.execute(stmt)
 	edges = []
-	for gid in cur:
-		edges.append(gid[0]) # Without reason, gid is in the format "(gid,)"
+	for edge in cur:
+		edges.append(edge) # Without reason, gid is in the format "(gid,)"
 	node_edge_dict[(node, is_forward)] = edges
 	return edges
 
-def random_walk_for_one(dirname, gid, osm_id, walk_num, step_num, conn, table_name):
+def random_walk_for_one(dirname, edge, walk_num, step_num, conn, table_name):
 	# check if result file already exist
-	cur = conn.cursor()
-	stmt = "SELECT source_osm, target_osm FROM {table_name} WHERE gid = {gid}".format(table_name = table_name, gid = gid)
-	cur.execute(stmt)
-	source_osm, target_osm = cur.fetchone()
+	osm_id, source_osm, target_osm = edge
 
 	fname = "{dirname}/{osm_id}_{source_osm}_{target_osm}.p".format( \
 		dirname = dirname, osm_id = osm_id, source_osm = source_osm, target_osm = target_osm)
@@ -65,17 +64,14 @@ def random_walk_for_one(dirname, gid, osm_id, walk_num, step_num, conn, table_na
 		return
 
 	node_edge_dict = {}
-	edge_node_dict = {}
 	edge_visited_num = {}
 	for i in range(walk_num):
 		is_forward = 2*i >= walk_num
-
-		edge = gid
 		# edge_visited_num[(edge, is_forward)] = edge_visited_num.get((edge, is_forward), 0) + 1
 
 		for _ in range(step_num):
-			source, target = get_nodes(edge, edge_node_dict, conn, table_name)
-			node = target if is_forward else source
+			osm_id, source_osm, target_osm = edge
+			node = target_osm if is_forward else source_osm
 			edges = get_edges(node, is_forward, node_edge_dict, conn, table_name)
 			if not edges:
 				# reach dead end
@@ -93,27 +89,21 @@ def random_walk_for_one(dirname, gid, osm_id, walk_num, step_num, conn, table_na
 	backward_res = []
 	
 	for visited_num, (edge, is_forward) in results:
-		stmt = "SELECT gid, osm_id, source, target, source_osm, target_osm FROM {table_name} WHERE gid = {gid}".format(table_name = table_name, gid = edge)
-		cur.execute(stmt)
-		gid, osm_id, source, target, source_osm, target_osm = cur.fetchone()
 		if is_forward:
-			forward_res.append([gid, osm_id, source, target, source_osm, target_osm, visited_num])
+			forward_res.append([osm_id, source_osm, target_osm, visited_num])
 		else:
-			backward_res.append([gid, osm_id, source, target, source_osm, target_osm, visited_num])
+			backward_res.append([osm_id, source_osm, target_osm, visited_num])
 
 	with open(fname, 'w') as f:
 	    pickle.dump([forward_res, backward_res], f)
 
 def random_walk_for_all(argv):
-	if len(argv) != 2 and len(argv) != 4:
-		print("usage: python random_walk.py walk_num step_num_in_one_walk uri table_name (uri and table_name are optional)")
-		sys.exit()
-
-	walk_num, step_num = int(argv[0]), int(argv[1])
-	if len(argv) == 4:
-		uri, table_name = argv[2], argv[3]
-	else:
-		uri, table_name = "host=localhost port=5432 dbname=routing user=tom password=myPassword", "ways"
+	argv += [None] * 4
+	walk_num 	= 100 			if argv[0] is None else int(argv[0])
+	step_num 	= 10 			if argv[1] is None else int(argv[1])
+	uri 		= "host=localhost port=5432 dbname=step1 user=tom password=myPassword"\
+					 			if argv[2] is None else argv[2]
+	table_name 	= "step1_ways"	if argv[3] is None else argv[3]
 
 	# create directory to store results
 	dirname = "random_walk_results_{walk_num}_{step_num}".format(walk_num = walk_num, step_num = step_num)
@@ -127,15 +117,15 @@ def random_walk_for_all(argv):
 
 	# fetch all edge ids from psql
 	conn = psycopg2.connect(uri)
-	stmt = "SELECT gid FROM {table_name}".format(table_name = table_name)
+	stmt = "SELECT DISTINCT osm_id, source_osm, target_osm FROM {table_name}".format(table_name = table_name)
 	cur = conn.cursor()
 	cur.execute(stmt)
 
-	for i, gid in enumerate(cur):
-		if i%10 == 0 and i > 0:
-			print "processed {} egdes".format(i)
-		# Without reason, gid is in the format "(gid,)", so I use gid[0] below
-		random_walk_for_one(dirname, gid[0], osm_id, walk_num, step_num, conn, table_name)
+	print "get all edges!"
+	for i, edge in enumerate(cur):
+		if i%10 == 9:
+			print "processed {} egdes".format(i + 1)
+		random_walk_for_one(dirname, edge, walk_num, step_num, conn, table_name)
 
 	conn.close()
 
