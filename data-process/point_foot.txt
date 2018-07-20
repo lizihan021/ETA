@@ -1,0 +1,11 @@
+]
+            }
+        }
+    },
+    "layout": {
+    },
+    "paint": {
+        "circle-color": "#307C38",
+        "circle-radius": 5
+    }
+}
