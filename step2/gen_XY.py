@@ -26,8 +26,9 @@ Usage:
 				| locate result file 					| 			|
 	rw_sn 		| step number for random walk, used to  | int 		| 10
 				| locate result file 					| 			|
-	uri 		| how to log in pgrouting database 		| string 	| "host=localhost port=5432 dbname=routing user=tom password=myPassword"
-	table_name 	| name of the table storing edge data 	| string 	| "ways"
+	uri 		| how to log in step1_res database 		| string 	| "host=localhost port=5432 dbname=step1 user=tom password=myPassword"
+	table_name 	| name of the table storing map 	 	| string 	| "edge_speed"
+				| matching results 						|			|
 
 	We do expect data_table has the following columns:
 		gid: pgrouting edge_id

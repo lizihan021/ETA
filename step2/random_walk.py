@@ -11,10 +11,16 @@ Meaning:
 	Each walk contains 10 steps (10 edges, starting edge not included)
 	Half of the walks are forward along the edge, and the other half are backward
 
+Default Inputs:
+	walk_num 	= 100
+	step_num 	= 10
+	uri 		= "host=localhost port=5432 dbname=step1 user=tom password=myPassword"
+	table_name 	= "step1_ways"
+
 Results:
-	Stored in dir "/random_walk_results_[rw_params]"
+	Stored in dir "/random_walk_results_[walk_num]_[step_num_in_one_walk]"
 	For each edge is stored in 
-		"/random_walk_results_[rw_params]/[osm_id]_[source_osm]_[target_osm].p"
+		"/random_walk_results_[walk_num]_[step_num_in_one_walk]/[osm_id]_[source_osm]_[target_osm].p"
 	
 	The rows in txt are sorted descendingly according to the "# of times being visited"
 """
@@ -50,7 +56,7 @@ def get_edges(node, is_forward, node_edge_dict, conn, table_name):
 	cur.execute(stmt)
 	edges = []
 	for edge in cur:
-		edges.append(edge) # Without reason, gid is in the format "(gid,)"
+		edges.append(edge)
 	node_edge_dict[(node, is_forward)] = edges
 	return edges
 
@@ -63,12 +69,15 @@ def random_walk_for_one(dirname, edge, walk_num, step_num, conn, table_name):
 	if os.path.isfile(fname):
 		return
 
+	edge_copy = edge
+
 	node_edge_dict = {}
 	edge_visited_num = {}
 	for i in range(walk_num):
 		is_forward = 2*i >= walk_num
 		# edge_visited_num[(edge, is_forward)] = edge_visited_num.get((edge, is_forward), 0) + 1
 
+		edge = edge_copy
 		for _ in range(step_num):
 			osm_id, source_osm, target_osm = edge
 			node = target_osm if is_forward else source_osm
@@ -80,6 +89,7 @@ def random_walk_for_one(dirname, edge, walk_num, step_num, conn, table_name):
 			edge_visited_num[(edge, is_forward)] = edge_visited_num.get((edge, is_forward), 0) + 1
 
 	# sort walk result in descending order
+
 	results = []
 	for (edge, is_forward), visited_num in edge_visited_num.iteritems():
 		results.append([visited_num, (edge, is_forward)])
@@ -89,20 +99,22 @@ def random_walk_for_one(dirname, edge, walk_num, step_num, conn, table_name):
 	backward_res = []
 	
 	for visited_num, (edge, is_forward) in results:
+		osm_id, source_osm, target_osm = edge
+		# print edge, is_forward, visited_num
 		if is_forward:
 			forward_res.append([osm_id, source_osm, target_osm, visited_num])
 		else:
 			backward_res.append([osm_id, source_osm, target_osm, visited_num])
 
 	with open(fname, 'w') as f:
-	    pickle.dump([forward_res, backward_res], f)
+		pickle.dump([forward_res, backward_res], f)
 
 def random_walk_for_all(argv):
 	argv += [None] * 4
 	walk_num 	= 100 			if argv[0] is None else int(argv[0])
 	step_num 	= 10 			if argv[1] is None else int(argv[1])
 	uri 		= "host=localhost port=5432 dbname=step1 user=tom password=myPassword"\
-					 			if argv[2] is None else argv[2]
+								if argv[2] is None else argv[2]
 	table_name 	= "step1_ways"	if argv[3] is None else argv[3]
 
 	# create directory to store results

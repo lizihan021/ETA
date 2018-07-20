@@ -1,4 +1,4 @@
-from convert import ptspath_convert
+
 import sys, os
 
 front_end_path_dir = "frontend-path/"
