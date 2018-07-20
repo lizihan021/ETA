@@ -1,0 +1,13 @@
+]
+            }
+        }
+    },
+    "layout": {
+        "line-join": "round",
+        "line-cap": "round"
+    },
+    "paint": {
+        "line-color": "#C05C58",
+        "line-width": 8
+    }
+}

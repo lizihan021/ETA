@@ -1,0 +1,11 @@
+{
+    "id": "route",
+    "type": "line",
+    "source": {
+        "type": "geojson",
+        "data": {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [

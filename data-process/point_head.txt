@@ -1,0 +1,11 @@
+{
+    "id": "point",
+    "type": "circle",
+    "source": {
+        "type": "geojson",
+        "data": {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
