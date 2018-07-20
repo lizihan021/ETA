@@ -21,6 +21,8 @@ data-process/*.out
 data-process/graph-cache
 data-process/gpxpy
 package-lock.json
+get-path/pgrouting-test/path_seq
+
 # Logs
 logs
 npm-debug.log*

@@ -146,10 +146,12 @@ html
         }
 
         function _drawFromFolder(map, objs, draw_template = true) {
-            console.log("draw...");
             objs.forEach(function(obj) {
-                //console.log(obj);
-                console.log("drawing...");
+                if (map.getLayer(obj.id)) {
+                    console.log("remove");
+                    map.removeLayer(obj.id);
+                    map.removeSource(obj.id)
+                }
                 map.addLayer(obj);
             });
         }
@@ -254,15 +256,16 @@ html
                     //_drawPoints(map, "point", "#307C38", data);
                     _drawGeoJson(map, "geo", data);
                 }); */
-
-                $.post("/draw", {dir: "frontend-geo"}, function(data, status) {
+                $.post("/draw", {dir: "frontend-path"}, function(data, status) {
+                    console.log("draw path " + data.length + " files");
                     _drawFromFolder(map, data);
                 });
                 $.post("/draw", {dir: "frontend-points"}, function(data, status) {
+                    console.log("draw points " + data.length + " files");
                     _drawFromFolder(map, data);
                 });
-
-                $.post("/draw", {dir: "frontend-path"}, function(data, status) {
+                $.post("/draw", {dir: "frontend-geo"}, function(data, status) {
+                    console.log("draw geo " + data.length + " files");
                     _drawFromFolder(map, data);
                 });
             });
