@@ -33,7 +33,7 @@ import threading
 
 from matching import matching
 
-maxthreadnum = 128
+maxthreadnum = 64
 
 if __name__ == '__main__':
     # print len(sys.argv)

@@ -33,7 +33,7 @@ import threading
 
 from matching import matching
 
-maxthreadnum = 64
+maxthreadnum = 2
 
 if __name__ == '__main__':
     # print len(sys.argv)
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         sys.stdout.write(print_str)
         sys.stdout.flush()
         while (threading.active_count() > maxthreadnum):
-            time.sleep(1)
+            time.sleep(0.1)
         th = threading.Thread(target=matching, args=(sys.argv[1 + i], ))
         th.start()
         print_str = "\r{0}/{1} {2:.3f}%".format(i+1, num_files, 100.0*float(i+1)/float(num_files))
@@ -59,6 +59,6 @@ if __name__ == '__main__':
     while (threading.active_count() > 1):
         sys.stdout.write("\ralive thread: "+str(threading.active_count()-1)+" ")
         sys.stdout.flush()
-        time.sleep(0.5)
+        time.sleep(0.1)
 
     print "done!"

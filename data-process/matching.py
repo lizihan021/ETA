@@ -33,6 +33,12 @@ gps_error = 0.000001
 
 FNULL = open(os.devnull, 'w')
 
+def get_insert_query(gid, osm_id, timestamp, speed, source_osm, target_osm, source, target, order_id):
+    stmt = "INSERT INTO edge_speed(gid, osm_id, timestamp, speed, source_osm, target_osm, source, target, order_id) VALUES"
+    stmt += "({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8});".format(gid, osm_id, timestamp, speed, source_osm, target_osm, source, target, order_id)
+
+    return stmt
+
 # datalist is 1-D data list, nullValue is the value which represent that the data is missing
 def impute_list(datalist, nullValue):
     for idx in range(len(datalist)):
@@ -266,6 +272,7 @@ def matching(filename):
     speeds = impute_list(speeds, 0)
 
     edge_speed_file = filename + '.txt'
+    order_id = filename.split('/')[-1]
     try:
         os.remove(edge_speed_file)
     except OSError:
@@ -273,12 +280,17 @@ def matching(filename):
 
     with open(edge_speed_file, 'a') as f:
         for edge_idx in range(len(edges)):
+            e = edges[edge_idx]
+            gid, osm_id, source_osm, target_osm, source, target, direction = e[0], e[1], e[2], e[3], e[6], e[7], e[8]
             if timestamps[edge_idx]:
                 # print edge_idx, speeds[edge_idx], timestamps[edge_idx]
-                e = edges[edge_idx]
-                gid, osm_id, source_osm, target_osm, source, target, direction = e[0], e[1], e[2], e[3], e[6], e[7], e[8]
                 f.write('{0} {1} {2} {3:.3f} {4} {5} {6} {7} {8}\n'\
                         .format(gid, osm_id, timestamps[edge_idx], speeds[edge_idx], source_osm, target_osm, source, target, direction))
+            else:
+                # print edge_idx, speeds[edge_idx], timestamps[edge_idx]
+                f.write('{0} {1} {2} {3} {4} {5} {6} {7} {8}\n'\
+                        .format(gid, osm_id, 0, -1, source_osm, target_osm, source, target, direction))
+    
     # for idx in range(len(raw_gps)):
     #     print raw_gps[idx][0], raw_gps[idx][1], raw_gps[idx][2  ]
     conn.close()
