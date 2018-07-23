@@ -45,6 +45,7 @@ def find_path(cur, start_node, end_node):
             sql = "SELECT gid, source, target, x1, y1, x2, y2, cost FROM ways where gid=(%s)" % edge_id
             cur.execute(sql)
             edge_row = cur.fetchall()[0]
+            # print edge_row[1], 
             [start_x, start_y, end_x, end_y, cost] = edge_row[3:]
             # add the edge information in the path
             path.append(path_edge(edge_id, start_x, start_y, end_x, end_y, cost))
@@ -58,6 +59,7 @@ def get_path(db_name, username, password, x1, y1, x2, y2):
     # find nearest vertex
     start_node = find_nearest_vertex_id(cur, x1, y1)
     end_node = find_nearest_vertex_id(cur, x2, y2)
+    # print start_node, end_node
 
     # find path using A*
     path = find_path(cur, start_node, end_node)
