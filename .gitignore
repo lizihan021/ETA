@@ -30,6 +30,9 @@ yarn-debug.log*
 yarn-error.log*
 node_modules
 
+# step2 Zizhao part
+step2/random_walk_results*
+
 # Optional npm cache directory
 .npm
 

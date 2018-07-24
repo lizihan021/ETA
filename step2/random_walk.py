@@ -14,7 +14,7 @@ Meaning:
 Default Inputs:
 	walk_num 	= 100
 	step_num 	= 10
-	uri 		= "host=localhost port=5432 dbname=step1 user=tom password=myPassword"
+	uri 		= "host=localhost port=5432 dbname=routing user=tom password=myPassword"
 	table_name 	= "step1_ways"
 
 Results:
@@ -113,7 +113,7 @@ def random_walk_for_all(argv):
 	argv += [None] * 4
 	walk_num 	= 100 			if argv[0] is None else int(argv[0])
 	step_num 	= 10 			if argv[1] is None else int(argv[1])
-	uri 		= "host=localhost port=5432 dbname=step1 user=tom password=myPassword"\
+	uri 		= "host=localhost port=5432 dbname=routing user=tom password=myPassword"\
 								if argv[2] is None else argv[2]
 	table_name 	= "step1_ways"	if argv[3] is None else argv[3]
 
