@@ -170,14 +170,15 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params, cv):
 		row_speed = []
 
 		for i in range(60*24*NUM_OF_DAYS/time_itv):
+			# print i
 
 			start_t = beginning + i * 60 * time_itv
 			end_t = start_t + 60 * time_itv
 
 			stmt = "SELECT AVG(speed) FROM {table_name} WHERE osm_id = {osm_id} AND source_osm = {s_osm} AND target_osm = {t_osm} \
-					AND timestamp >= {ele_start_t} AND timestamp < {ele_end_t}".format( \
+					AND timestamp >= {start_t} AND timestamp < {end_t}".format( \
 					table_name = table_name, osm_id = row_osm_id, s_osm = row_s_osm, t_osm = row_t_osm, \
-					ele_start_t = ele_start_t, ele_end_t = ele_end_t)
+					start_t = start_t, end_t = end_t)
 			cur.execute(stmt)
 
 			# avg_speed can be None
