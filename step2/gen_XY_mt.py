@@ -110,8 +110,9 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params, cv):
 	osm_id, s_osm, t_osm = edge
 	x_rn, x_cn, y_len, time_itv, q_rate = gen_XY_params
 	rw_wn, rw_sn = rw_params
-	conn, table_name = db_params
-	
+	uri, table_name = db_params
+
+	conn = psycopg2.connect(uri)	
 
 	fname = "{dirname}/{osm_id}_{s_osm}_{t_osm}.p".format( \
 		dirname = dirname, osm_id = osm_id, s_osm = s_osm, t_osm = t_osm)
@@ -260,7 +261,7 @@ def gen_XY_for_all(argv):
 
 	# fetch all edge ids from psql
 	conn = psycopg2.connect(uri)
-	db_params = (conn, table_name)
+	db_params = (uri, table_name)
 
 	stmt = "SELECT osm_id, source_osm, target_osm FROM {table_name}".format(table_name = e_table_name)
 	cur = conn.cursor()
@@ -278,7 +279,7 @@ def gen_XY_for_all(argv):
 
         th = threading.Thread(target=gen_XY_for_one, args=(dirname, edge, gen_XY_params, rw_params, db_params, cv, ))
         th.start()
-        
+
         cv.release()
 
 	conn.close()
