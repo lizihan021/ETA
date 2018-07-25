@@ -3,6 +3,7 @@ import psycopg2
 import pgr_utils as pgr
 import path2json as p2j
 import math
+import simplejson as json
 
 # take command input python pgr_astar.py x1 y1 x2 y2
 # give stdout print of edge_id
@@ -52,7 +53,8 @@ def astar(start, goal, map):
     open_set = []
     current = start
     open_set.append(start)
-
+    state_count = 0 # state number for visualization
+    get_node_staus_json(state_count, open_set, closed_set, map)
     while open_set:
         current = min(open_set, key=lambda x:x.h+x.g)
         # print current.node_id
@@ -76,9 +78,48 @@ def astar(start, goal, map):
                 node.g = new_g
                 node.parent = current
                 open_set.append(node)
+        state_count = state_count + 1
+        get_node_staus_json(state_count, open_set, closed_set, map)
     print "No path found!!!"
     return False
 
+def get_node_staus_json(state_count, open_set, closed_set, map):
+    input_json_file = "../data-process/frontend-points/pt-template1.json"
+
+    file_in = open(input_json_file, "r")
+    
+    # load data to json_data
+    json_data = json.load(file_in)
+
+    # output json state files
+    point_count = 0
+    # points in openset
+    for point in open_set:
+        output_json_file = "../data-process/frontend-points/astar-pt-%d-%d.json" % (state_count, point_count)
+        point_count = point_count + 1
+        # name file out
+        file_out = open(output_json_file, "w")
+        # edit json
+        json_data["source"]["data"]["geometry"]["coordinates"] = [[point.lon, point.lat]]
+        json_data["paint"]["circle-color"] = "#00FF00"
+        # write back json
+        file_out.write(json.dumps(json_data, sort_keys=True, use_decimal=True, indent=4, separators=(',', ': ')))
+        file_out.close()
+    # points in closeset
+    for point in closed_set:
+        output_json_file = "../data-process/frontend-points/astar-pt-%d-%d.json" % (state_count, point_count)
+        point_count = point_count + 1
+        # name file out
+        file_out = open(output_json_file, "w")
+        # edit json
+        json_data["source"]["data"]["geometry"]["coordinates"] = [[point.lon, point.lat]]
+        json_data["paint"]["circle-color"] = "#00FF00"
+        # write back json
+        file_out.write(json.dumps(json_data, sort_keys=True, use_decimal=True, indent=4, separators=(',', ': ')))
+        file_out.close()
+
+    # close input file
+    file_in.close()
 
 def get_map(cur):
     # get all edges
@@ -150,6 +191,7 @@ def main():
         node_list = get_path(end_node, map)
         node_list = [elem.node_id for elem in node_list]
     node_list.reverse()
-    print node_list
+    
+
 if __name__ == "__main__":
     main()
