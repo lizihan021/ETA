@@ -341,7 +341,9 @@ def gen_XY_for_all(argv):
 		while (threading.active_count() > MAX_THREAD_NUM):
 			cv.wait()
 
-		print "start the {}th thread".format(i)
+		print_str = "\n\n\n\nstart the {}th thread\n\n\n\n".format(i)
+		sys.stdout.write(print_str)
+		sys.stdout.flush()
 
 		th = threading.Thread(target=gen_XY_for_one, args=(dirname, edge, gen_XY_params, rw_params, db_params, cv, ))
 		th.start()
