@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=gen_XY
+#SBATCH --job-name=gen_XY_mt
 #SBATCH --partition=cpu128
 #SBATCH --mail-type=all
 #SBATCH --mail-user=wangzizhao@sjtu.edu.cn
