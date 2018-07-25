@@ -54,8 +54,8 @@ import pickle
 import threading
 
 START_DATE = 1
-NUM_OF_DAYS = 30
-MAX_THREAD_NUM = 32
+NUM_OF_DAYS = 1
+MAX_THREAD_NUM = 2
 MAX_NO_DATA_TIME = 1 # unit is hour
 
 def timestamp2time(timestamp):
@@ -80,7 +80,9 @@ def get_row_ids(edge, x_rn, x_cn, rw_params):
 	try:
 		f = open(rw_res_fname)
 	except IOError:
-		print 'Cannot open random walk result file: {}!!!'.format(rw_res_fname)
+		print_str = 'Cannot open random walk result file: {}!!!\n'.format(rw_res_fname)
+		sys.stdout.write(print_str)
+		sys.stdout.flush()
 		return [], None
 	else:
 		with f:
@@ -88,7 +90,9 @@ def get_row_ids(edge, x_rn, x_cn, rw_params):
 
 	# check if we get enough rows
 	if len(f_res) + len(b_res) + 1 < x_rn:
-		print 'Random walk result file: {} does not have enough neighbor edges!!!'.format(rw_res_fname)
+		print_str = 'Random walk result file: {} does not have enough neighbor edges!!!\n'.format(rw_res_fname)
+		sys.stdout.write(print_str)
+		sys.stdout.flush()
 		return [], None
 
 	for i, (osm_id, s_osm, t_osm, _) in enumerate(f_res):
@@ -148,17 +152,27 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params, cv):
 	rw_wn, rw_sn = rw_params
 	uri, table_name = db_params
 
+	print_str = "gen XY for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
+	sys.stdout.write(print_str)
+	sys.stdout.flush()
+
 	conn = psycopg2.connect(uri)	
 
 	fname = "{dirname}/{osm_id}_{s_osm}_{t_osm}.p".format( \
 		dirname = dirname, osm_id = osm_id, s_osm = s_osm, t_osm = t_osm)
 	if os.path.isfile(fname):
+		cv.acquire()
+		cv.notify()
+		cv.release()
 		return
 
 	# read in edge_ids from random walk results
 	# if random walk result does not have enough rows, 
 	row_ids, ori_edge_id = get_row_ids(edge, x_rn, x_cn, rw_params)
 	if not row_ids:
+		cv.acquire()
+		cv.notify()
+		cv.release()
 		return
 	
 	beginning = 1477929600 + (START_DATE - 1) * 24*60*60 # 2016/11/01 00:00:00
@@ -170,7 +184,6 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params, cv):
 		row_speed = []
 
 		for i in range(60*24*NUM_OF_DAYS/time_itv):
-			# print i
 
 			start_t = beginning + i * 60 * time_itv
 			end_t = start_t + 60 * time_itv
@@ -187,6 +200,10 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params, cv):
 
 		row_speed = impute_list(row_speed, MAX_NO_DATA_TIME * 60 / time_itv)
 		rows_speed.append(row_speed)
+
+	print_str = "Got rows_speed for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
+	sys.stdout.write(print_str)
+	sys.stdout.flush()
 
 
 	Xs = []
@@ -213,8 +230,10 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params, cv):
 			Y.append(avg_speed)
 
 		if Y_missing_element_num >= y_len * (1 - q_rate):
-			print "Not enough element for Y of edge {}-{}-{} during {} - {} ({} - {})".format(\
+			print_str = "Not enough element for Y of edge {}-{}-{} during {} - {} ({} - {})\n".format(\
 				osm_id, s_osm, t_osm, timestamp2time(Y_start_t), timestamp2time(Y_end_t), Y_start_t, Y_end_t)
+			sys.stdout.write(print_str)
+			sys.stdout.flush()
 			continue
 
 		# build X
@@ -242,14 +261,18 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params, cv):
 			X.append(row)
 
 		if exists_empty_row:
-			print "When creating X, empty row of edge {}-{}-{} during {} - {} ({} - {})".format( \
+			print_str = "When creating X, empty row of edge {}-{}-{} during {} - {} ({} - {})\n".format( \
 				row_osm_id, row_s_osm, row_t_osm, \
 				timestamp2time(X_start_t), timestamp2time(X_end_t), X_start_t, X_end_t)
+			sys.stdout.write(print_str)
+			sys.stdout.flush()
 			continue
 
 		if X_missing_element_num >= x_rn * x_cn * (1 - q_rate):
-			print "Not enough element for X of edge {}-{}-{} during {} - {} ({} - {})".format(\
+			print_str = "Not enough element for X of edge {}-{}-{} during {} - {} ({} - {})\n".format(\
 				osm_id, s_osm, t_osm, timestamp2time(X_start_t), timestamp2time(X_end_t), X_start_t, X_end_t)
+			sys.stdout.write(print_str)
+			sys.stdout.flush()
 			continue
 
 		Xs.append(X)
@@ -296,7 +319,9 @@ def gen_XY_for_all(argv):
 		if e.errno != errno.EEXIST:
 			print("something wrong when creating dir!")
 			raise
-	print "results are stored in dir: {dirname}".format(dirname = dirname)
+	print_str = "results are stored in dir: {dirname}\n".format(dirname = dirname)
+	sys.stdout.write(print_str)
+	sys.stdout.flush()
 
 	# fetch all edge ids from psql
 	conn = psycopg2.connect(uri)
@@ -315,6 +340,8 @@ def gen_XY_for_all(argv):
 		cv.acquire()
 		while (threading.active_count() > MAX_THREAD_NUM):
 			cv.wait()
+
+		print "start the {}th thread".format(i)
 
 		th = threading.Thread(target=gen_XY_for_one, args=(dirname, edge, gen_XY_params, rw_params, db_params, cv, ))
 		th.start()
