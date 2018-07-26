@@ -52,10 +52,11 @@ import datetime, pytz
 import os, errno, sys
 import pickle
 import threading
+import time
 
 START_DATE = 1
-NUM_OF_DAYS = 1
-MAX_THREAD_NUM = 2
+NUM_OF_DAYS = 30
+MAX_THREAD_NUM = 32
 MAX_NO_DATA_TIME = 1 # unit is hour
 
 def timestamp2time(timestamp):
@@ -101,8 +102,10 @@ def get_row_ids(edge, x_rn, x_cn, rw_params):
 		row_ids.append([osm_id, s_osm, t_osm])
 
 	row_ids = list(reversed(row_ids))
-	ori_edge_id = i
-
+	if len(f_res):
+		ori_edge_id = i
+	else:
+		ori_edge_id = 0
 
 	for i, (osm_id, s_osm, t_osm, _) in enumerate(b_res):
 		if i > max((x_cn - 3)/2, x_cn - len(f_res) - 2):
@@ -146,33 +149,36 @@ def impute_list(datalist, max_cont_missing_num):
 	return new_datalist
 
 
-def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params, cv):
+def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
 	osm_id, s_osm, t_osm = edge
 	x_rn, x_cn, y_len, time_itv, q_rate = gen_XY_params
 	rw_wn, rw_sn = rw_params
 	uri, table_name = db_params
 
-	print_str = "gen XY for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
+	print_str = "Gen XY for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
 	sys.stdout.write(print_str)
 	sys.stdout.flush()
 
-	conn = psycopg2.connect(uri)	
+	conn = psycopg2.connect(uri)
+
+	print_str = "Successfully connect to db for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
+	sys.stdout.write(print_str)
+	sys.stdout.flush()
 
 	fname = "{dirname}/{osm_id}_{s_osm}_{t_osm}.p".format( \
 		dirname = dirname, osm_id = osm_id, s_osm = s_osm, t_osm = t_osm)
 	if os.path.isfile(fname):
-		cv.acquire()
-		cv.notify()
-		cv.release()
 		return
 
 	# read in edge_ids from random walk results
 	# if random walk result does not have enough rows, 
 	row_ids, ori_edge_id = get_row_ids(edge, x_rn, x_cn, rw_params)
+
+	print_str = "Got row ids for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
+	sys.stdout.write(print_str)
+	sys.stdout.flush()
+
 	if not row_ids:
-		cv.acquire()
-		cv.notify()
-		cv.release()
 		return
 	
 	beginning = 1477929600 + (START_DATE - 1) * 24*60*60 # 2016/11/01 00:00:00
@@ -180,6 +186,9 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params, cv):
 
 	rows_speed = []
 	for row_osm_id, row_s_osm, row_t_osm in row_ids:
+		print_str = "Got rows_speed for edge {}-{}-{}\n".format(row_osm_id, row_s_osm, row_t_osm)
+		sys.stdout.write(print_str)
+		sys.stdout.flush()
 
 		row_speed = []
 
@@ -281,12 +290,7 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params, cv):
 	# if len(Xs):
 	# 	assert len(Xs) == len(Ys)
 	with open(fname, 'w') as f:
-		pickle.dump([Xs,Ys], f)
-
-	cv.acquire()
-	cv.notify()
-	cv.release()
-			
+		pickle.dump([Xs,Ys], f)			
 
 
 def gen_XY_for_all(argv):
@@ -331,24 +335,19 @@ def gen_XY_for_all(argv):
 	cur = conn.cursor()
 	cur.execute(stmt)
 
-	cv = threading.Condition()
-
 	for i, edge in enumerate(cur):
 		# if i%10 == 9:
 		# 	print "processed {} egdes".format(i + 1)
 		# Without reason, gid is in the format "(gid,)", so I use gid[0] below
-		cv.acquire()
 		while (threading.active_count() > MAX_THREAD_NUM):
-			cv.wait()
+			time.sleep(0.1)
 
 		print_str = "\n\n\n\nstart the {}th thread\n\n\n\n".format(i)
 		sys.stdout.write(print_str)
 		sys.stdout.flush()
 
-		th = threading.Thread(target=gen_XY_for_one, args=(dirname, edge, gen_XY_params, rw_params, db_params, cv, ))
+		th = threading.Thread(target=gen_XY_for_one, args=(dirname, edge, gen_XY_params, rw_params, db_params, ))
 		th.start()
-
-		cv.release()
 
 	conn.close()
 
