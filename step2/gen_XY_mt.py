@@ -56,7 +56,7 @@ import time
 
 START_DATE = 1
 NUM_OF_DAYS = 30
-MAX_THREAD_NUM = 32
+MAX_THREAD_NUM = 2
 MAX_NO_DATA_TIME = 1 # unit is hour
 
 def timestamp2time(timestamp):
