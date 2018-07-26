@@ -79,7 +79,8 @@ def astar(start, goal, map):
                 node.parent = current
                 open_set.append(node)
         state_count = state_count + 1
-        get_node_staus_json(state_count, open_set, closed_set, map)
+        if state_count==81:
+            get_node_staus_json(state_count, open_set, closed_set, map)
     print "No path found!!!"
     return False
 
@@ -93,33 +94,51 @@ def get_node_staus_json(state_count, open_set, closed_set, map):
 
     # output json state files
     point_count = 0
-    # points in openset
-    for point in open_set:
+    
+    # points in set
+    point_set = open_set + closed_set
+    max_cost_node = max(point_set, key=lambda x:x.h)
+    max_cost = max_cost_node.h
+    # point in single file
+    for point in point_set:
         output_json_file = "../data-process/frontend-points/astar-pt-%d-%d.json" % (state_count, point_count)
         point_count = point_count + 1
         # name file out
         file_out = open(output_json_file, "w")
         # edit json
-        json_data["source"]["data"]["geometry"]["coordinates"] = [[point.lon, point.lat]]
-        json_data["paint"]["circle-color"] = "#00FF00"
-        # write back json
-        file_out.write(json.dumps(json_data, sort_keys=True, use_decimal=True, indent=4, separators=(',', ': ')))
-        file_out.close()
-    # points in closeset
-    for point in closed_set:
-        output_json_file = "../data-process/frontend-points/astar-pt-%d-%d.json" % (state_count, point_count)
-        point_count = point_count + 1
-        # name file out
-        file_out = open(output_json_file, "w")
-        # edit json
-        json_data["source"]["data"]["geometry"]["coordinates"] = [[point.lon, point.lat]]
-        json_data["paint"]["circle-color"] = "#00FF00"
+        coordinates = []
+        coordinates.append([point.lon, point.lat])
+        coordinates.append([100,30])
+        json_data["source"]["data"]["geometry"]["coordinates"] = coordinates
+        json_data["paint"]["circle-color"] = cost_to_rgb_code(point.h, max_cost)
         # write back json
         file_out.write(json.dumps(json_data, sort_keys=True, use_decimal=True, indent=4, separators=(',', ': ')))
         file_out.close()
 
+    # # all points in a file
+    # output_json_file = "../data-process/frontend-points/astar-pt-%d.json" % (state_count)
+    # file_out = open(output_json_file, "w")
+    # coordinates = []
+    # for point in point_set:
+    #     coordinates.append([point.lon, point.lat])
+    # json_data["source"]["data"]["geometry"]["coordinates"] = coordinates
+    # file_out.write(json.dumps(json_data, sort_keys=True, use_decimal=True, indent=4, separators=(',', ': ')))
+    # file_out.close()
+    
     # close input file
     file_in.close()
+
+def cost_to_rgb_code(cost, max_cost):
+    if cost < max_cost/2:
+        g = round(cost/(max_cost/2) * 255)
+        b = 255 - g
+        r = 0
+    else:
+        r = round((cost/(max_cost/2) - 1) * 255)
+        g = 255 - r
+        b = 0
+    color = '#%02X%02X%02X' % (r, g, b)
+    return color
 
 def get_map(cur):
     # get all edges
@@ -192,6 +211,22 @@ def main():
         node_list = [elem.node_id for elem in node_list]
     node_list.reverse()
     
+    # path json
+    input_json_file = "../data-process/frontend-path/path-template.json"
+    output_json_file = "../data-process/frontend-path/astar-path.json"
+    file_in = open(input_json_file, "r")
+    file_out = open(output_json_file, "w")
+    # load data to json_data
+    json_data = json.load(file_in)
+    path_coordinates = []
+    for node_num in node_list:
+        node = map.nodes[node_num-1]
+        path_coordinates.append([node.lon, node.lat])
+    json_data["source"]["data"]["geometry"]["coordinates"] = path_coordinates
+    json_data["paint"]["line-width"] = 4
+    json_data["paint"]["line-color"] = "#000020"
+    file_out.write(json.dumps(json_data, sort_keys=True, use_decimal=True, indent=4, separators=(',', ': ')))
+    file_out.close()
 
 if __name__ == "__main__":
     main()
