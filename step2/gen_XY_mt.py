@@ -186,13 +186,12 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
 
 	rows_speed = []
 	for row_osm_id, row_s_osm, row_t_osm in row_ids:
-		print_str = "Got rows_speed for edge {}-{}-{}\n".format(row_osm_id, row_s_osm, row_t_osm)
-		sys.stdout.write(print_str)
-		sys.stdout.flush()
 
 		row_speed = []
 
 		for i in range(60*24*NUM_OF_DAYS/time_itv):
+
+			print i
 
 			start_t = beginning + i * 60 * time_itv
 			end_t = start_t + 60 * time_itv
@@ -203,12 +202,18 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
 					start_t = start_t, end_t = end_t)
 			cur.execute(stmt)
 
+			print "finish execute"
+
 			# avg_speed can be None
 			avg_speed = cur.fetchone()[0]
 			row_speed.append(avg_speed)
 
 		row_speed = impute_list(row_speed, MAX_NO_DATA_TIME * 60 / time_itv)
 		rows_speed.append(row_speed)
+			
+		print_str = "Got row_speed for edge {}-{}-{}\n".format(row_osm_id, row_s_osm, row_t_osm)
+		sys.stdout.write(print_str)
+		sys.stdout.flush()
 
 	print_str = "Got rows_speed for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
 	sys.stdout.write(print_str)
