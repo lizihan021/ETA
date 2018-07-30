@@ -63,10 +63,10 @@ router.post('/draw', function(req, res, next) {
         filename = path.join(__dirname, '../../data-process/' + req.body.dir + '/' + filename);
         fs.readFile(filename, {encoding: 'utf-8'}, function (err, data) {
           if (!err) {
+            console.log(filename);
             obj = JSON.parse(data);
             obj.id = oldfilename;
             objs.push(obj);
-            console.log(filename);
             if (objs.length == valid_file_count) {
               console.log("send " + req.body.dir);
               res.send(objs);
