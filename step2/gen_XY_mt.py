@@ -218,12 +218,17 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, uri):
 
 	Xs = []
 	Ys = []
+	timestamps = []
 	for i in range(60*24*NUM_OF_DAYS/time_itv - x_cn - y_len + 1):
 		start_t = beginning + i * 60 * time_itv
 		Y_start_t = start_t + (x_cn + 0) * 60 * time_itv
 		Y_end_t = start_t + (x_cn + y_len) * 60 * time_itv - 1
 		X_start_t = start_t
 		X_end_t = start_t + x_cn * 60 * time_itv - 1
+
+		timeinfo = [X_start_t, X_end_t, Y_start_t, Y_end_t, \
+			timestamp2time(X_start_t), timestamp2time(X_end_t), \
+			timestamp2time(Y_start_t), timestamp2time(Y_end_t)]
 		
 		X = []
 		Y = []
@@ -287,11 +292,12 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, uri):
 
 		Xs.append(X)
 		Ys.append(Y)
+		timestamps.append(timeinfo)
 
 	# if len(Xs):
 	# 	assert len(Xs) == len(Ys)
 	with open(fname, 'w') as f:
-		pickle.dump([Xs,Ys], f)			
+		pickle.dump([row_ids, Xs, Ys, timestamps], f)			
 
 
 def gen_XY_for_all(argv):
