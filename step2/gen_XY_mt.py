@@ -54,10 +54,10 @@ import pickle
 import threading
 import time
 
-START_DATE = 1
+START_DATE = 1			# generate Xs and Ys from 2016/11/START_DATE
 NUM_OF_DAYS = 30
 MAX_THREAD_NUM = 2
-MAX_NO_DATA_TIME = 1 # unit is hour
+MAX_NO_DATA_TIME = 1 	# unit is hour
 
 def timestamp2time(timestamp):
 	"""
@@ -196,13 +196,9 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
 			start_t = beginning + i * 60 * time_itv
 			end_t = start_t + 60 * time_itv
 
-			stmt = "SELECT AVG(speed) FROM {table_name} WHERE osm_id = {osm_id} AND source_osm = {s_osm} AND target_osm = {t_osm} \
-					AND timestamp >= {start_t} AND timestamp < {end_t}".format( \
-					table_name = table_name, osm_id = row_osm_id, s_osm = row_s_osm, t_osm = row_t_osm, \
-					start_t = start_t, end_t = end_t)
+			stmt = "SELECT AVG(speed) FROM {table_name} WHERE timestamp >= {start_t} AND timestamp < {end_t}".format( \
+					table_name = table_name, start_t = start_t, end_t = end_t)
 			cur.execute(stmt)
-
-			print "finish execute"
 
 			# avg_speed can be None
 			avg_speed = cur.fetchone()[0]
@@ -310,14 +306,11 @@ def gen_XY_for_all(argv):
 	rw_sn 		= 10 	if argv[6] is None else int(argv[6])
 	uri 		= "host=localhost port=5432 dbname=routing user=tom password=myPassword" \
 						if argv[7] is None else argv[7]
-	table_name	= "edge_speed" \
+	table_name	= "step1_ways" \
 						if argv[8] is None else argv[8]
-	e_table_name	= "step1_ways" \
-						if argv[9] is None else argv[9]
 
 	assert x_rn%2 == 1, "x_rn must be an odd num, get wrong input: {}".format(x_rn)
-	gen_XY_params = (x_rn, x_cn, y_len, time_itv, q_rate)
-	rw_params = (rw_wn, rw_sn)
+
 
 	# create directory to store results
 	dirname = "gen_XY_results_{x_rn}_{x_cn}_{y_len}_{time_itv}_{q_rate}".format(\
@@ -332,11 +325,11 @@ def gen_XY_for_all(argv):
 	sys.stdout.write(print_str)
 	sys.stdout.flush()
 
+
 	# fetch all edge ids from psql
 	conn = psycopg2.connect(uri)
-	db_params = (uri, table_name)
 
-	stmt = "SELECT osm_id, source_osm, target_osm FROM {table_name}".format(table_name = e_table_name)
+	stmt = "SELECT osm_id, source_osm, target_osm FROM {table_name}".format(table_name = table_name)
 	cur = conn.cursor()
 	cur.execute(stmt)
 
@@ -350,6 +343,15 @@ def gen_XY_for_all(argv):
 		print_str = "\n\n\n\nstart the {}th thread\n\n\n\n".format(i)
 		sys.stdout.write(print_str)
 		sys.stdout.flush()
+
+
+		gen_XY_params = (x_rn, x_cn, y_len, time_itv, q_rate)
+		# params for random walk
+		rw_params = (rw_wn, rw_sn)
+
+		osm_id, s_osm, t_osm = edge
+		table_name = "edge{}_{}_{}".format(osm_id, s_osm, t_osm)
+		db_params = (uri, table_name)
 
 		th = threading.Thread(target=gen_XY_for_one, args=(dirname, edge, gen_XY_params, rw_params, db_params, ))
 		th.start()
