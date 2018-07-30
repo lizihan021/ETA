@@ -301,7 +301,7 @@ def gen_XY_for_all(argv):
 	x_cn 		= 8 	if argv[1] is None else int(argv[1])
 	y_len 		= 2 	if argv[2] is None else int(argv[2])
 	time_itv 	= 15 	if argv[3] is None else int(argv[3])
-	q_rate 		= 0.6 	if argv[4] is None else float(argv[4])
+	q_rate 		= 0.75 	if argv[4] is None else float(argv[4])
 	rw_wn 		= 100 	if argv[5] is None else int(argv[5])
 	rw_sn 		= 10 	if argv[6] is None else int(argv[6])
 	uri 		= "host=localhost port=5432 dbname=routing user=tom password=myPassword" \
