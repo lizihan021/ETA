@@ -69,7 +69,7 @@ def timestamp2time(timestamp):
 	new_timestamp = old_timezone.localize(old_timestamp).astimezone(new_timezone)
 	return new_timestamp.strftime('%Y-%m-%d %H:%M:%S')
 
-def get_row_ids(edge, x_rn, x_cn, rw_params):
+def get_row_ids(edge, x_rn, rw_params):
 	osm_id, s_osm, t_osm = edge
 	row_ids = [[osm_id, s_osm, t_osm]]
 	walk_num, step_num = rw_params
@@ -97,7 +97,7 @@ def get_row_ids(edge, x_rn, x_cn, rw_params):
 		return [], None
 
 	for i, (osm_id, s_osm, t_osm, _) in enumerate(f_res):
-		if i > max((x_cn - 3)/2, x_cn - len(b_res) - 2):
+		if i > max((x_rn - 3)/2, x_rn - len(b_res) - 2):
 			break
 		row_ids.append([osm_id, s_osm, t_osm])
 
@@ -108,7 +108,7 @@ def get_row_ids(edge, x_rn, x_cn, rw_params):
 		ori_edge_id = 0
 
 	for i, (osm_id, s_osm, t_osm, _) in enumerate(b_res):
-		if i > max((x_cn - 3)/2, x_cn - len(f_res) - 2):
+		if i > max((x_rn - 3)/2, x_rn - len(f_res) - 2):
 			break
 		row_ids.append([osm_id, s_osm, t_osm])
 
@@ -149,11 +149,10 @@ def impute_list(datalist, max_cont_missing_num):
 	return new_datalist
 
 
-def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
+def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, uri):
 	osm_id, s_osm, t_osm = edge
 	x_rn, x_cn, y_len, time_itv, q_rate = gen_XY_params
 	rw_wn, rw_sn = rw_params
-	uri, table_name = db_params
 
 	# print_str = "Gen XY for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
 	# sys.stdout.write(print_str)
@@ -172,7 +171,7 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
 
 	# read in edge_ids from random walk results
 	# if random walk result does not have enough rows, 
-	row_ids, ori_edge_id = get_row_ids(edge, x_rn, x_cn, rw_params)
+	row_ids, ori_edge_id = get_row_ids(edge, x_rn, rw_params)
 
 	# print_str = "Got row ids for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
 	# sys.stdout.write(print_str)
@@ -180,7 +179,7 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
 
 	if not row_ids:
 		return
-	
+		
 	beginning = 1477929600 + (START_DATE - 1) * 24*60*60 # 2016/11/01 00:00:00
 	cur = conn.cursor()
 
@@ -196,7 +195,8 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
 			start_t = beginning + i * 60 * time_itv
 			end_t = start_t + 60 * time_itv
 
-			stmt = "SELECT MEDIAN(speed) FROM {table_name} WHERE timestamp >= {start_t} AND timestamp < {end_t}".format( \
+			table_name = "edge{}_{}_{}".format(row_osm_id, row_s_osm, row_t_osm)
+			stmt = "SELECT AVG(speed) FROM {table_name} WHERE timestamp >= {start_t} AND timestamp < {end_t}".format( \
 					table_name = table_name, start_t = start_t, end_t = end_t)
 			cur.execute(stmt)
 
@@ -297,11 +297,11 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
 def gen_XY_for_all(argv):
 	# process input argv
 	argv += [None] * 11
-	x_rn 		= 11 	if argv[0] is None else int(argv[0])
-	x_cn 		= 8 	if argv[1] is None else int(argv[1])
+	x_rn 		= 9 	if argv[0] is None else int(argv[0])
+	x_cn 		= 9 	if argv[1] is None else int(argv[1])
 	y_len 		= 2 	if argv[2] is None else int(argv[2])
 	time_itv 	= 15 	if argv[3] is None else int(argv[3])
-	q_rate 		= 0.6 	if argv[4] is None else float(argv[4])
+	q_rate 		= 0.75 	if argv[4] is None else float(argv[4])
 	rw_wn 		= 100 	if argv[5] is None else int(argv[5])
 	rw_sn 		= 10 	if argv[6] is None else int(argv[6])
 	uri 		= "host=localhost port=5432 dbname=routing user=tom password=myPassword" \
@@ -349,11 +349,7 @@ def gen_XY_for_all(argv):
 		# params for random walk
 		rw_params = (rw_wn, rw_sn)
 
-		osm_id, s_osm, t_osm = edge
-		table_name = "edge{}_{}_{}".format(osm_id, s_osm, t_osm)
-		db_params = (uri, table_name)
-
-		th = threading.Thread(target=gen_XY_for_one, args=(dirname, edge, gen_XY_params, rw_params, db_params, ))
+		th = threading.Thread(target=gen_XY_for_one, args=(dirname, edge, gen_XY_params, rw_params, uri, ))
 		th.start()
 
 	conn.close()
