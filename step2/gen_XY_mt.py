@@ -56,7 +56,7 @@ import time
 
 START_DATE = 1			# generate Xs and Ys from 2016/11/START_DATE
 NUM_OF_DAYS = 30
-MAX_THREAD_NUM = 2
+MAX_THREAD_NUM = 32
 MAX_NO_DATA_TIME = 1 	# unit is hour
 
 def timestamp2time(timestamp):
@@ -155,15 +155,15 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
 	rw_wn, rw_sn = rw_params
 	uri, table_name = db_params
 
-	print_str = "Gen XY for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
-	sys.stdout.write(print_str)
-	sys.stdout.flush()
+	# print_str = "Gen XY for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
+	# sys.stdout.write(print_str)
+	# sys.stdout.flush()
 
 	conn = psycopg2.connect(uri)
 
-	print_str = "Successfully connect to db for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
-	sys.stdout.write(print_str)
-	sys.stdout.flush()
+	# print_str = "Successfully connect to db for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
+	# sys.stdout.write(print_str)
+	# sys.stdout.flush()
 
 	fname = "{dirname}/{osm_id}_{s_osm}_{t_osm}.p".format( \
 		dirname = dirname, osm_id = osm_id, s_osm = s_osm, t_osm = t_osm)
@@ -174,9 +174,9 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
 	# if random walk result does not have enough rows, 
 	row_ids, ori_edge_id = get_row_ids(edge, x_rn, x_cn, rw_params)
 
-	print_str = "Got row ids for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
-	sys.stdout.write(print_str)
-	sys.stdout.flush()
+	# print_str = "Got row ids for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
+	# sys.stdout.write(print_str)
+	# sys.stdout.flush()
 
 	if not row_ids:
 		return
@@ -191,7 +191,7 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
 
 		for i in range(60*24*NUM_OF_DAYS/time_itv):
 
-			print i
+			# print i
 
 			start_t = beginning + i * 60 * time_itv
 			end_t = start_t + 60 * time_itv
@@ -207,13 +207,13 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
 		row_speed = impute_list(row_speed, MAX_NO_DATA_TIME * 60 / time_itv)
 		rows_speed.append(row_speed)
 			
-		print_str = "Got row_speed for edge {}-{}-{}\n".format(row_osm_id, row_s_osm, row_t_osm)
-		sys.stdout.write(print_str)
-		sys.stdout.flush()
+	# 	print_str = "Got row_speed for edge {}-{}-{}\n".format(row_osm_id, row_s_osm, row_t_osm)
+	# 	sys.stdout.write(print_str)
+	# 	sys.stdout.flush()
 
-	print_str = "Got rows_speed for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
-	sys.stdout.write(print_str)
-	sys.stdout.flush()
+	# print_str = "Got rows_speed for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
+	# sys.stdout.write(print_str)
+	# sys.stdout.flush()
 
 
 	Xs = []
@@ -298,10 +298,10 @@ def gen_XY_for_all(argv):
 	# process input argv
 	argv += [None] * 11
 	x_rn 		= 11 	if argv[0] is None else int(argv[0])
-	x_cn 		= 4 	if argv[1] is None else int(argv[1])
+	x_cn 		= 8 	if argv[1] is None else int(argv[1])
 	y_len 		= 2 	if argv[2] is None else int(argv[2])
 	time_itv 	= 15 	if argv[3] is None else int(argv[3])
-	q_rate 		= 0.75 	if argv[4] is None else float(argv[4])
+	q_rate 		= 0.6 	if argv[4] is None else float(argv[4])
 	rw_wn 		= 100 	if argv[5] is None else int(argv[5])
 	rw_sn 		= 10 	if argv[6] is None else int(argv[6])
 	uri 		= "host=localhost port=5432 dbname=routing user=tom password=myPassword" \
