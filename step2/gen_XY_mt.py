@@ -179,7 +179,7 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, uri):
 
 	if not row_ids:
 		return
-		
+
 	beginning = 1477929600 + (START_DATE - 1) * 24*60*60 # 2016/11/01 00:00:00
 	cur = conn.cursor()
 
@@ -196,7 +196,7 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, uri):
 			end_t = start_t + 60 * time_itv
 
 			table_name = "edge{}_{}_{}".format(row_osm_id, row_s_osm, row_t_osm)
-			stmt = "SELECT AVG(speed) FROM {table_name} WHERE timestamp >= {start_t} AND timestamp < {end_t}".format( \
+			stmt = "SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY speed) FROM {table_name} WHERE timestamp >= {start_t} AND timestamp < {end_t}".format( \
 					table_name = table_name, start_t = start_t, end_t = end_t)
 			cur.execute(stmt)
 
