@@ -1,74 +1,79 @@
 import numpy as np
 from keras.callbacks import ModelCheckpoint
 from keras import backend as K
-from dog import DogsDataset
-from os.path import exists
-import matplotlib.pyplot as plt
-from sklearn.svm import SVC, LinearSVC
-from sklearn.model_selection import StratifiedKFold, GridSearchCV
-from sklearn import metrics
-from sklearn.preprocessing import label_binarize
-from sklearn.metrics import roc_curve, auc
-import optunity
-import optunity.metrics
+from keras.utils import plot_model
+from road import RoadDataset
+import os
 import pickle
 import sys
 from utils import get
 from road import RoadDataset
 from cnn import *
-
+import shutil
 
 # Initialize global variables
-MODEL_WEIGHTS_FILE = get('cnn.weights_file')
+WEIGHTS_FOLDER = get('cnn.weights_folder')
 VALIDATION_SPLIT = get('cnn.validation_split')
 BATCH_SIZE = get('cnn.batch_size')
 CNN_EPOCHS = get('cnn.cnn_epochs')
+DATA_FOLDER = get('data_folder')
 np.set_printoptions(edgeitems=30)
 
-if not (len(sys.argv)>1 and sys.argv[1] == "svm"):
-	# get cnn model
-	model = generate_model()
+def train():
+    # read filenames
+    try:
+        os.mkdir(WEIGHTS_FOLDER)
+    except:
+        print "weight folder exist"
+    filenames = [x for _, _, x in os.walk(DATA_FOLDER)]
+    for filename in filenames[0]:
+        # define input data:
+        train_road(filename)
 
-	# define input data:
-	dogs = DogsDataset()
-	x_train, label_train, features_train = dogs.trainX, dogs.trainY, dogs.train_features
-	# actually for test we don't know feature test.
-	x_test, label_test, features_test_ground_truth = dogs.testX, dogs.testY, dogs.test_features
 
-	if not exists(MODEL_WEIGHTS_FILE) or (len(sys.argv)>1 and sys.argv[1] == "train"):
-		if len(sys.argv)>1 and sys.argv[1] == "train":
-			model.load_weights(MODEL_WEIGHTS_FILE)
-		print("training ...")
-		callbacks = [ModelCheckpoint(MODEL_WEIGHTS_FILE, monitor='val_loss', save_best_only=True)]
-		history = model.fit(x_train, features_train,
-		          batch_size=BATCH_SIZE,
-		          epochs=CNN_EPOCHS,
-		          verbose=1,
-		          validation_split=VALIDATION_SPLIT,
-		          callbacks=callbacks)
+def train_road(filename):
+    road = RoadDataset(filename)
+    x_train, y_train, x_test, y_test = road.load_data()
+    print len(x_train[0]), len(x_train[0][0])
+    print x_train[1]
+    print y_train[1]
+    exit(0)
 
-		max_val_loss, idx = min((val, idx) for (idx, val) in enumerate(history.history['val_loss']))
-		print('Min validation loss = {0:.4f} (epoch {1:d})'.format(max_val_loss, idx+1))
+    # get cnn model
+    model = generate_model()
+    plot_model(model, to_file='model.png')
 
-	print("loading cnn weight ...")
-	model.load_weights(MODEL_WEIGHTS_FILE)
+    print("training ...")
+    callbacks = [ModelCheckpoint(WEIGHTS_FOLDER + "weights_" + filename, 
+                                 monitor='val_loss', save_best_only=True)]
+    history = model.fit(x_train, y_train,
+              batch_size=BATCH_SIZE,
+              epochs=CNN_EPOCHS,
+              verbose=1,
+              validation_split=VALIDATION_SPLIT,
+              callbacks=callbacks)
 
-	# print("testing cnn performance ...")
-	# score = model.evaluate(x_test, features_test_ground_truth, batch_size=BATCH_SIZE, verbose=0)
-	# print('Test loss:', score[0], 'Test accuracy:', score[1])
+    max_val_loss, idx = min((val, idx) for (idx, val) in enumerate(history.history['val_loss']))
+    print('Min validation loss = {0:.4f} (epoch {1:d})'.format(max_val_loss, idx+1))
 
-	print("CNN predicting ...")
-	features_test = model.predict(x_test, batch_size=BATCH_SIZE)
+    print("loading cnn weight ...")
+    model.load_weights(WEIGHTS_FOLDER + "weights_" + filename)
 
-	# for i in range(10):
-	# 	visualize_face(x_test[i], features_test[i])
+    print("testing cnn performance ...")
+    score = model.evaluate(x_test, y_test, batch_size=BATCH_SIZE, verbose=0)
+    print('Test loss:', score[0], 'Test accuracy:', score[1])
 
-	# get sift feature
-	print("getting sift feature ...")
-	new_features_train = get_new_feature(x_train, features_train)
-	new_features_test = get_new_feature(x_test, features_test)
-	# new_features_test = get_new_feature(x_test, features_test_ground_truth) # used to test svm
+    #print("CNN predicting ...")
+    #features_test = model.predict(x_test, batch_size=BATCH_SIZE)
 
-	pickle.dump( {"a":new_features_train,"b":label_train,"c":new_features_test,"d":label_test}, open( "save.p", "wb" ) )
+def clean():
+    try:
+        shutil.rmtree(WEIGHTS_FOLDER)
+    except:
+        print "error cleaning"
 
-exit(0)
+if __name__ == "__main__":
+    argv = sys.argv + [None] * 2
+    if argv[1] == 'clean':
+        clean()
+    train()
