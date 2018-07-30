@@ -56,7 +56,7 @@ import time
 
 START_DATE = 1			# generate Xs and Ys from 2016/11/START_DATE
 NUM_OF_DAYS = 30
-MAX_THREAD_NUM = 32
+MAX_THREAD_NUM = 1
 MAX_NO_DATA_TIME = 1 	# unit is hour
 
 def timestamp2time(timestamp):
@@ -149,11 +149,10 @@ def impute_list(datalist, max_cont_missing_num):
 	return new_datalist
 
 
-def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
+def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, uri):
 	osm_id, s_osm, t_osm = edge
 	x_rn, x_cn, y_len, time_itv, q_rate = gen_XY_params
 	rw_wn, rw_sn = rw_params
-	uri, table_name = db_params
 
 	# print_str = "Gen XY for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
 	# sys.stdout.write(print_str)
@@ -180,6 +179,9 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
 
 	if not row_ids:
 		return
+
+	for r in row_ids:
+		print r
 	
 	beginning = 1477929600 + (START_DATE - 1) * 24*60*60 # 2016/11/01 00:00:00
 	cur = conn.cursor()
@@ -196,6 +198,7 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
 			start_t = beginning + i * 60 * time_itv
 			end_t = start_t + 60 * time_itv
 
+			table_name = "edge{}_{}_{}".format(row_osm_id, row_s_osm, row_t_osm)
 			stmt = "SELECT AVG(speed) FROM {table_name} WHERE timestamp >= {start_t} AND timestamp < {end_t}".format( \
 					table_name = table_name, start_t = start_t, end_t = end_t)
 			cur.execute(stmt)
@@ -349,11 +352,7 @@ def gen_XY_for_all(argv):
 		# params for random walk
 		rw_params = (rw_wn, rw_sn)
 
-		osm_id, s_osm, t_osm = edge
-		table_name = "edge{}_{}_{}".format(osm_id, s_osm, t_osm)
-		db_params = (uri, table_name)
-
-		th = threading.Thread(target=gen_XY_for_one, args=(dirname, edge, gen_XY_params, rw_params, db_params, ))
+		th = threading.Thread(target=gen_XY_for_one, args=(dirname, edge, gen_XY_params, rw_params, uri, ))
 		th.start()
 
 	conn.close()
