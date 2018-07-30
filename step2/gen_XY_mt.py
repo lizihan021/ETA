@@ -56,7 +56,7 @@ import time
 
 START_DATE = 1			# generate Xs and Ys from 2016/11/START_DATE
 NUM_OF_DAYS = 30
-MAX_THREAD_NUM = 1
+MAX_THREAD_NUM = 32
 MAX_NO_DATA_TIME = 1 	# unit is hour
 
 def timestamp2time(timestamp):
@@ -179,10 +179,7 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, uri):
 
 	if not row_ids:
 		return
-
-	for r in row_ids:
-		print r
-	
+		
 	beginning = 1477929600 + (START_DATE - 1) * 24*60*60 # 2016/11/01 00:00:00
 	cur = conn.cursor()
 
