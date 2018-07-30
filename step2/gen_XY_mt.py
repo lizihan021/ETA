@@ -69,7 +69,7 @@ def timestamp2time(timestamp):
 	new_timestamp = old_timezone.localize(old_timestamp).astimezone(new_timezone)
 	return new_timestamp.strftime('%Y-%m-%d %H:%M:%S')
 
-def get_row_ids(edge, x_rn, x_cn, rw_params):
+def get_row_ids(edge, x_rn, rw_params):
 	osm_id, s_osm, t_osm = edge
 	row_ids = [[osm_id, s_osm, t_osm]]
 	walk_num, step_num = rw_params
@@ -97,7 +97,7 @@ def get_row_ids(edge, x_rn, x_cn, rw_params):
 		return [], None
 
 	for i, (osm_id, s_osm, t_osm, _) in enumerate(f_res):
-		if i > max((x_cn - 3)/2, x_cn - len(b_res) - 2):
+		if i > max((x_rn - 3)/2, x_rn - len(b_res) - 2):
 			break
 		row_ids.append([osm_id, s_osm, t_osm])
 
@@ -108,7 +108,7 @@ def get_row_ids(edge, x_rn, x_cn, rw_params):
 		ori_edge_id = 0
 
 	for i, (osm_id, s_osm, t_osm, _) in enumerate(b_res):
-		if i > max((x_cn - 3)/2, x_cn - len(f_res) - 2):
+		if i > max((x_rn - 3)/2, x_rn - len(f_res) - 2):
 			break
 		row_ids.append([osm_id, s_osm, t_osm])
 
@@ -172,7 +172,7 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
 
 	# read in edge_ids from random walk results
 	# if random walk result does not have enough rows, 
-	row_ids, ori_edge_id = get_row_ids(edge, x_rn, x_cn, rw_params)
+	row_ids, ori_edge_id = get_row_ids(edge, x_rn, rw_params)
 
 	# print_str = "Got row ids for edge {}-{}-{}\n".format(osm_id, s_osm, t_osm)
 	# sys.stdout.write(print_str)
@@ -297,8 +297,8 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
 def gen_XY_for_all(argv):
 	# process input argv
 	argv += [None] * 11
-	x_rn 		= 11 	if argv[0] is None else int(argv[0])
-	x_cn 		= 8 	if argv[1] is None else int(argv[1])
+	x_rn 		= 9 	if argv[0] is None else int(argv[0])
+	x_cn 		= 9 	if argv[1] is None else int(argv[1])
 	y_len 		= 2 	if argv[2] is None else int(argv[2])
 	time_itv 	= 15 	if argv[3] is None else int(argv[3])
 	q_rate 		= 0.75 	if argv[4] is None else float(argv[4])
