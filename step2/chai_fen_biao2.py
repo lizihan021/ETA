@@ -54,7 +54,7 @@ def create_table():
 def saperate_table():
     uri = "host=localhost port=5432 dbname=routing user=tom password=myPassword"
     conn = psycopg2.connect(uri)
-    stmt = "select osm_id, timestamp, speed, source_osm, target_osm from edge_speed_1;"
+    stmt = "select osm_id, timestamp, speed, source_osm, target_osm from edge_speed_2;"
     cur = conn.cursor()
     cur.execute(stmt)
     conn.commit()
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     #get_distinct_key()
     #drop_table()
     #create_table()
-    clean_table()
+    #clean_table()
     saperate_table()
 
 
