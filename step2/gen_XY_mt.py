@@ -196,7 +196,7 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, db_params):
 			start_t = beginning + i * 60 * time_itv
 			end_t = start_t + 60 * time_itv
 
-			stmt = "SELECT AVG(speed) FROM {table_name} WHERE timestamp >= {start_t} AND timestamp < {end_t}".format( \
+			stmt = "SELECT MEDIAN(speed) FROM {table_name} WHERE timestamp >= {start_t} AND timestamp < {end_t}".format( \
 					table_name = table_name, start_t = start_t, end_t = end_t)
 			cur.execute(stmt)
 

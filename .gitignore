@@ -22,7 +22,10 @@ data-process/graph-cache
 data-process/gpxpy
 package-lock.json
 get-path/pgrouting-test/path_seq
-
+train/data
+train/weights
+train/model.png
+train/useless
 # Logs
 logs
 npm-debug.log*
