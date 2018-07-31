@@ -53,11 +53,13 @@ import os, errno, sys
 import pickle
 import threading
 import time
+import numpy as np
 
 START_DATE = 1			# generate Xs and Ys from 2016/11/START_DATE
 NUM_OF_DAYS = 30
 MAX_THREAD_NUM = 32
 MAX_NO_DATA_TIME = 1 	# unit is hour
+SPEED_SEL = "AVG_Q1_to_Q3" # "MEDIAN"
 
 def timestamp2time(timestamp):
 	"""
@@ -196,12 +198,31 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, uri):
 			end_t = start_t + 60 * time_itv
 
 			table_name = "edge{}_{}_{}".format(row_osm_id, row_s_osm, row_t_osm)
-			stmt = "SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY speed) FROM {table_name} WHERE timestamp >= {start_t} AND timestamp < {end_t}".format( \
-					table_name = table_name, start_t = start_t, end_t = end_t)
-			cur.execute(stmt)
 
-			# avg_speed can be None
-			avg_speed = cur.fetchone()[0]
+			if SPEED_SEL == "MEDIAN":
+				stmt = "SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY speed) FROM {table_name} WHERE timestamp >= {start_t} AND timestamp < {end_t}".format( \
+						table_name = table_name, start_t = start_t, end_t = end_t)
+				cur.execute(stmt)
+				# avg_speed can be None
+				avg_speed = cur.fetchone()[0]
+
+			elif SPEED_SEL == "AVG_Q1_to_Q3":
+				stmt = "SELECT speed FROM {table_name} WHERE timestamp >= {start_t} AND timestamp < {end_t}".format( \
+						table_name = table_name, start_t = start_t, end_t = end_t)
+				cur.execute(stmt)
+				speeds = []
+				for speed in cur:
+					speeds.append(speed[0])
+				if not speeds:
+					avg_speed = None
+				elif len(speeds) <= 2:
+					avg_speed = np.mean(speeds)
+				else:
+					speeds = sorted(speeds)
+					Q1, Q3 = np.percentile(speeds, [25, 75])
+					Q1_to_Q3 = [x for x in speeds if x >= Q1 and x <= Q3]
+					avg_speed = np.mean(Q1_to_Q3) 
+
 			row_speed.append(avg_speed)
 
 		row_speed = impute_list(row_speed, MAX_NO_DATA_TIME * 60 / time_itv)
