@@ -15,47 +15,41 @@ html
             box-shadow: 0px 0px 2px 1px rgba(100,100,100,0.75);
         }
 
-        .slidecontainer_my {
+        .slidecontainer {
+            position: absolute; top: 20px; left: 650px; width: 150px; height: 20px;
+            background: #4d86b9;
             z-index: 3;
-            position: absolute;
-            top: 10px;
-            left: 640px;
-            width: 200px;
-            height: 80px;
         }
 
-        /* The slider itself */
-        .slider_my {
-            -webkit-appearance: none;  /* Override default CSS styles */
-            appearance: none;
-            width: 100%; /* Full-width */
-            outline: none; /* Remove outline */
-            opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
-            -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+        .slider {
+            -webkit-appearance: none;
+            border-radius: 5px;
+            background: #4d86b9;
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: .2s;
             transition: opacity .2s;
+            z-index: 3;
         }
 
-        /* Mouse-over effects */
-        .slider_my:hover {
-            opacity: 1; /* Fully shown on mouse-over */
-        }
-
-        /* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
-        .slider_my::-webkit-slider-thumb {
-            -webkit-appearance: none; /* Override default look */
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
             appearance: none;
-            width: 25px; /* Set a specific slider handle width */
-            height: 75px; /* Slider handle height */
-            background: #4CAF50; /* Green background */
-            cursor: pointer; /* Cursor on hover */
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
         }
 
-        .slider_my::-moz-range-thumb {
-            width: 25px; /* Set a specific slider handle width */
-            height: 75px; /* Slider handle height */
-            background: #4CAF50; /* Green background */
-            cursor: pointer; /* Cursor on hover */
+        .slider::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
         }
+
         #go-button { position: absolute; top: 10px; left: 330px; width: 50px; height: 80px; z-index: 2 }
         #draw-button { position: absolute; top: 10px; left: 400px; width: 100px; height: 80px; z-index: 2 }
         #astar-button { position: absolute; top: 10px; left: 520px; width: 100px; height: 80px; z-index: 2 }
@@ -72,8 +66,9 @@ html
     button(class="button", id="astar-button").
         A-star
 
-    div(class="slidecontainer_my")
-        input(type="range", min="1", max="100", value="50", class="slider_my", id="astar-range")
+    div(class="slidecontainer")
+        input(type="range", min="0", max="100", value="0", class="slider", id="astar-range")
+
 
     script.
         function _fillData(layer, data) {
@@ -327,7 +322,7 @@ html
                     _drawFromFolder(map, data);
                 });
             });
-
+            total_batches = 0;
             $("#go-button").click(function(){
                 $.post("/getpath",
                 {
@@ -338,39 +333,34 @@ html
                 },
                 function(data, status){
                     console.log(data);
-                    _drawFromFolder(map, data);
+                    _drawFromFolder(map, [data[1]]);
+                    total_batches = data[0];
+                    $('#astar-range').prop({'max': total_batches});
                 });
             });
 
-            function sleep(milliseconds) {
-              var start = new Date().getTime();
-              for (var i = 0; i < 1e7; i++) {
-                if ((new Date().getTime() - start) > milliseconds){
-                  break;
-                }
-              }
+            old_batchidx = -1;
+            batchidx = 0;
+            old_data = [];
+            var slider = document.getElementById("astar-range");
+            slider.oninput = function() {
+                console.log(this.value);
+                batchidx = this.value;
             }
 
-            batchidx = 0;
             $("#astar-button").click(function(){
-                console.log('hheheheheheh');
-                var old_data = [];
                 //for (var i = 0; i < 10; i++) {
-                    $.post("/drawastarsbatch", {dir: "frontend-points", batch: batchidx}, function(data, status) {
+                    $.post("/drawastarsbatch", {dir: "frontend-astar", batch: batchidx}, function(data, status) {
                         // console.log(data);
-                        _removeFromFolder(map, old_data);
-                        _drawFromFolder(map, data);
+                        if (batchidx < old_batchidx) {
+                            _removeFromFolder(map, old_data);
+                            _drawFromFolder(map, data);
+                        } else if (batchidx > old_batchidx) {
+                            _drawFromFolder(map, data);
+                        }
                         old_data = data;
-                        batchidx = batchidx + 1;
+                        old_batchidx = batchidx;
                     });
                 //}
             });
         });
-
-
-
-
-
-
-
-
