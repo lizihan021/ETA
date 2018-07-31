@@ -2,6 +2,7 @@
     "data_folder": "./data/",
     "X_dim": [9, 9],
     "Y_dim": 2,
+    "time_dim": 206,
     "test_split": 0.3,
     "cnn": {
     	"dropout_cnn": 0.3,
@@ -10,6 +11,6 @@
     	"optimizer": "adam",
         "weights_folder": "weights/",
         "validation_split": 0.2,
-        "cnn_epochs": 800,
+        "cnn_epochs": 50,
     },
 }

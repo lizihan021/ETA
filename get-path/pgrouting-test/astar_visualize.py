@@ -3,6 +3,7 @@ import psycopg2
 import pgr_utils as pgr
 import path2json as p2j
 import math
+import os
 import simplejson as json
 
 # take command input python pgr_astar.py x1 y1 x2 y2
@@ -54,9 +55,10 @@ def astar(start, goal, map):
     current = start
     open_set.append(start)
     state_count = 0 # state number for visualization
-    get_node_staus_json(state_count, open_set, closed_set, map)
+    get_node_staus_json(state_count, open_set, open_set, map)
     while open_set:
         current = min(open_set, key=lambda x:x.h+x.g)
+        state_nodes = []
         # print current.node_id
         if current == goal:
             return True
@@ -64,7 +66,7 @@ def astar(start, goal, map):
         closed_set.append(current)
 
         # print len(neighbor(current, map))
-        
+
         for node in neighbor(current, map):
             if node in closed_set:
                 continue
@@ -78,30 +80,34 @@ def astar(start, goal, map):
                 node.g = new_g
                 node.parent = current
                 open_set.append(node)
-        state_count = state_count + 1
-        if state_count==81:
-            get_node_staus_json(state_count, open_set, closed_set, map)
+                state_nodes.append(node)
+        if not state_nodes:
+            continue
+        else:
+            state_count = state_count + 1
+            point_set = open_set + closed_set
+            get_node_staus_json(state_count, state_nodes, point_set, map)
+
     print "No path found!!!"
     return False
 
-def get_node_staus_json(state_count, open_set, closed_set, map):
+def get_node_staus_json(state_count, state_nodes, point_set, map):
     input_json_file = "../data-process/frontend-points/pt-template1.json"
 
     file_in = open(input_json_file, "r")
-    
+
     # load data to json_data
     json_data = json.load(file_in)
 
     # output json state files
     point_count = 0
-    
+
     # points in set
-    point_set = open_set + closed_set
     max_cost_node = max(point_set, key=lambda x:x.h)
     max_cost = max_cost_node.h
     # point in single file
-    for point in point_set:
-        output_json_file = "../data-process/frontend-points/astar-pt-%d-%d.json" % (state_count, point_count)
+    for point in state_nodes:
+        output_json_file = "../data-process/frontend-astar/astar-pt-%d-%d.json" % (state_count, point_count)
         point_count = point_count + 1
         # name file out
         file_out = open(output_json_file, "w")
@@ -124,7 +130,7 @@ def get_node_staus_json(state_count, open_set, closed_set, map):
     # json_data["source"]["data"]["geometry"]["coordinates"] = coordinates
     # file_out.write(json.dumps(json_data, sort_keys=True, use_decimal=True, indent=4, separators=(',', ': ')))
     # file_out.close()
-    
+
     # close input file
     file_in.close()
 
@@ -180,37 +186,42 @@ def get_path(end, map):
 def main():
     db_name = "routing"
     username = "tom"
-    password = "myPassword"  
+    password = "myPassword"
 
-    x1, y1 = 104.08175,30.67946
-    x2, y2 = 104.05346,30.67108
-    # # get x, y from input
-    # try:
-    #     x1, y1, x2, y2 = sys.argv[1:]
-    # except:
-    #     print "commandline input error, should input x1, y1, x2, y2\n"
-    #     exit(-1)
-    
+    # x1, y1 = 104.08175,30.67946
+    # x2, y2 = 104.05346,30.67108
+    # get x, y from input
+    try:
+        x1, y1, x2, y2 = sys.argv[1:]
+    except:
+        print "commandline input error, should input x1, y1, x2, y2\n"
+        exit(-1)
+
     conn = pgr.connect_db(db_name, username, password)
     cur = conn.cursor()
 
     start_node_id = pgr.find_nearest_vertex_id(cur, x1, y1)
     end_node_id = pgr.find_nearest_vertex_id(cur, x2, y2)
-    
+
     map = get_map(cur)
 
     start_node = map.nodes[start_node_id-1]
     end_node = map.nodes[end_node_id-1]
-    
+
     map_initialize(end_node, map)
     
+    mydir = "../data-process/frontend-astar"
+    filelist = [ f for f in os.listdir(mydir) ]
+    for f in filelist:
+        os.remove(os.path.join(mydir, f))
+
     is_path_exist = astar(start_node, end_node, map)
 
     if is_path_exist:
         node_list = get_path(end_node, map)
         node_list = [elem.node_id for elem in node_list]
     node_list.reverse()
-    
+
     # path json
     input_json_file = "../data-process/frontend-path/path-template.json"
     output_json_file = "../data-process/frontend-path/astar-path.json"
@@ -224,7 +235,7 @@ def main():
         path_coordinates.append([node.lon, node.lat])
     json_data["source"]["data"]["geometry"]["coordinates"] = path_coordinates
     json_data["paint"]["line-width"] = 4
-    json_data["paint"]["line-color"] = "#000020"
+    json_data["paint"]["line-color"] = "#ef8783"
     file_out.write(json.dumps(json_data, sort_keys=True, use_decimal=True, indent=4, separators=(',', ': ')))
     file_out.close()
 

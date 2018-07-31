@@ -14,8 +14,46 @@ html
             -moz-box-shadow: 0px 0px 2px 1px rgba(100,100,100,0.75);
             box-shadow: 0px 0px 2px 1px rgba(100,100,100,0.75);
         }
+
+        .slidecontainer {
+            position: absolute; top: 10px; left: 520px; width: 135px; height: 10px;
+            border-radius: 5px;
+            background: #4d86b9;
+            z-index: 3;
+        }
+
+        .slider {
+            position: absolute; top: 0px;
+            -webkit-appearance: none;
+            border-radius: 5px;
+            background: #4d86b9;
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: .2s;
+            transition: opacity .2s;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+
         #go-button { position: absolute; top: 10px; left: 330px; width: 50px; height: 80px; z-index: 2 }
         #draw-button { position: absolute; top: 10px; left: 400px; width: 100px; height: 80px; z-index: 2 }
+        #astar-button { position: absolute; top: 40px; left: 520px; width: 135px; height: 50px; z-index: 2 }
   body
     script(src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.2.0/mapbox-gl-geocoder.min.js')
     link(rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.2.0/mapbox-gl-geocoder.css' type='text/css')
@@ -26,6 +64,13 @@ html
         Go
     button(class="button", id="draw-button").
         Draw
+    button(class="button", id="astar-button").
+        A-star
+
+    div(class="slidecontainer")
+        input(type="range", min="0", max="100", value="0", class="slider", id="astar-range")
+
+
     script.
         function _fillData(layer, data) {
             var gpspoints = data.split("\n");
@@ -150,9 +195,18 @@ html
                 if (map.getLayer(obj.id)) {
                     console.log("remove");
                     map.removeLayer(obj.id);
-                    map.removeSource(obj.id)
+                    map.removeSource(obj.id);
                 }
                 map.addLayer(obj);
+            });
+        }
+
+        function _removeFromFolder(map, objs) {
+            objs.forEach(function(obj) {
+                if (map.getLayer(obj.id)) {
+                    map.removeLayer(obj.id);
+                    map.removeSource(obj.id);
+                }
             });
         }
 
@@ -269,7 +323,7 @@ html
                     _drawFromFolder(map, data);
                 });
             });
-
+            total_batches = 0;
             $("#go-button").click(function(){
                 $.post("/getpath",
                 {
@@ -280,15 +334,34 @@ html
                 },
                 function(data, status){
                     console.log(data);
-                    _drawFromFolder(map, data);
+                    _drawFromFolder(map, [data[1]]);
+                    total_batches = data[0];
+                    $('#astar-range').prop({'max': total_batches});
                 });
             });
+
+            old_batchidx = -1;
+            batchidx = 0;
+            old_data = [];
+            var slider = document.getElementById("astar-range");
+            slider.oninput = function() {
+                console.log(this.value);
+                batchidx = this.value;
+            }
+
+            $("#astar-button").click(function(){
+                //for (var i = 0; i < 10; i++) {
+                    $.post("/drawastarsbatch", {dir: "frontend-astar", batch: batchidx}, function(data, status) {
+                        // console.log(data);
+                        if (batchidx < old_batchidx) {
+                            _removeFromFolder(map, old_data);
+                            _drawFromFolder(map, data);
+                        } else if (batchidx > old_batchidx) {
+                            _drawFromFolder(map, data);
+                        }
+                        old_data = data;
+                        old_batchidx = batchidx;
+                    });
+                //}
+            });
         });
-
-
-
-
-
-
-
-
