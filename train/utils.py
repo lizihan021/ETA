@@ -48,6 +48,19 @@ def impute_list(datalist, max_cont_missing_num):
 
     return new_datalist
 
+def unix2week(timelist):
+    res = []
+    for time in [timelist[4],timelist[6]]:
+        date, clock = time.split(" ")
+        tmp1 = [0] * 7
+        tmp1[int(date.split('-')[-1]) % 7] = 1
+        res = res + tmp1
+        clock = clock.split(':')
+        tmp2 = [0] * 96
+        tmp2[int(clock[0]) * 4 + int(int(clock[1]) / 15)] = 1
+        res = res + tmp2
+    return res
 
 if __name__ =="__main__":
-    print impute_list([-1,-1,9.146,7.816,6.486,7.1706,7.8552,8.5398,9.2244], 10)
+    #print impute_list([-1,-1,9.146,7.816,6.486,7.1706,7.8552,8.5398,9.2244], 10)
+    print unix2week([0,0,0,0,'2016-11-30 1:23:00','2016-11-30 1:23:00','2016-11-30 1:23:00','2016-11-30 1:23:00'])
