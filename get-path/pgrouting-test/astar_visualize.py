@@ -55,7 +55,7 @@ def astar(start, goal, map):
     current = start
     open_set.append(start)
     state_count = 0 # state number for visualization
-    get_node_staus_json(state_count, open_set, map)
+    get_node_staus_json(state_count, open_set, open_set, map)
     while open_set:
         current = min(open_set, key=lambda x:x.h+x.g)
         state_nodes = []
@@ -85,12 +85,13 @@ def astar(start, goal, map):
             continue
         else:
             state_count = state_count + 1
-            get_node_staus_json(state_count, state_nodes, map)
+            point_set = open_set + closed_set
+            get_node_staus_json(state_count, state_nodes, point_set, map)
 
     print "No path found!!!"
     return False
 
-def get_node_staus_json(state_count, point_set, map):
+def get_node_staus_json(state_count, state_nodes, point_set, map):
     input_json_file = "../data-process/frontend-points/pt-template1.json"
 
     file_in = open(input_json_file, "r")
@@ -105,7 +106,7 @@ def get_node_staus_json(state_count, point_set, map):
     max_cost_node = max(point_set, key=lambda x:x.h)
     max_cost = max_cost_node.h
     # point in single file
-    for point in point_set:
+    for point in state_nodes:
         output_json_file = "../data-process/frontend-astar/astar-pt-%d-%d.json" % (state_count, point_count)
         point_count = point_count + 1
         # name file out
