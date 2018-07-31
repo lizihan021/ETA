@@ -209,14 +209,11 @@ def main():
     end_node = map.nodes[end_node_id-1]
 
     map_initialize(end_node, map)
-<<<<<<< HEAD
     
     mydir = "../data-process/frontend-astar"
     filelist = [ f for f in os.listdir(mydir) ]
     for f in filelist:
         os.remove(os.path.join(mydir, f))
-=======
->>>>>>> 35c935d20bcdbec98a4a3dcc8be1277c1f55f21e
 
     is_path_exist = astar(start_node, end_node, map)
 
