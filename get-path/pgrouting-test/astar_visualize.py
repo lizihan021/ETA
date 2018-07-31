@@ -36,13 +36,19 @@ def neighbor(node, map):
     for edge in edges:
         if edge.source == node.node_id:
             neighbor_id_set.append(edge.target)
+        if edge.target == node.node_id:
+            neighbor_id_set.append(edge.source)
     for id in neighbor_id_set:
         neighbor_set.append(map.nodes[id-1])
     return neighbor_set
-def cost(source, target, map):
+def cost_of_edge(source, target, map):
     for edge in map.edges:
         if edge.source == source.node_id and edge.target == target.node_id:
             return edge.cost
+        if edge.target == source.node_id and edge.source == target.node_id:
+            # print "reverse"
+            return edge.cost
+    print "error cost"
 
 def h(source, goal, map):
     lon_diff = source.lon - goal.lon
@@ -58,9 +64,10 @@ def astar(start, goal, map):
     get_node_staus_json(state_count, open_set, open_set, map)
     while open_set:
         current = min(open_set, key=lambda x:x.h+x.g)
+        # print current.node_id
         state_nodes = []
         # print current.node_id
-        if current == goal:
+        if current.node_id == goal.node_id:
             return True
         open_set.remove(current)
         closed_set.append(current)
@@ -71,12 +78,12 @@ def astar(start, goal, map):
             if node in closed_set:
                 continue
             if node in open_set:
-                new_g = current.g + cost(current, node, map)
+                new_g = current.g + cost_of_edge(current, node, map)
                 if node.g > new_g:
                     node.g = new_g
                     node.parent = current
             else:
-                new_g = current.g + cost(current, node, map)
+                new_g = current.g + cost_of_edge(current, node, map)
                 node.g = new_g
                 node.parent = current
                 open_set.append(node)
@@ -202,7 +209,6 @@ def main():
 
     start_node_id = pgr.find_nearest_vertex_id(cur, x1, y1)
     end_node_id = pgr.find_nearest_vertex_id(cur, x2, y2)
-
     map = get_map(cur)
 
     start_node = map.nodes[start_node_id-1]
@@ -216,11 +222,11 @@ def main():
         os.remove(os.path.join(mydir, f))
 
     is_path_exist = astar(start_node, end_node, map)
-
+    node_list = []
     if is_path_exist:
         node_list = get_path(end_node, map)
         node_list = [elem.node_id for elem in node_list]
-    node_list.reverse()
+        node_list.reverse()
 
     # path json
     input_json_file = "../data-process/frontend-path/path-template.json"
