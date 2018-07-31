@@ -220,7 +220,7 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, uri):
 				else:
 					speeds = sorted(speeds)
 					Q1, Q3 = np.percentile(speeds, [25, 75])
-					Q1_to_Q3 = [x for x in speeds if x >= q1 and x <= q3]
+					Q1_to_Q3 = [x for x in speeds if x >= Q1 and x <= Q3]
 					avg_speed = np.mean(Q1_to_Q3) 
 
 			row_speed.append(avg_speed)
