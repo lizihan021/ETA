@@ -64,7 +64,7 @@ def astar(start, goal, map):
         closed_set.append(current)
 
         # print len(neighbor(current, map))
-        
+
         for node in neighbor(current, map):
             if node in closed_set:
                 continue
@@ -90,13 +90,13 @@ def get_node_staus_json(state_count, open_set, closed_set, map):
     input_json_file = "../data-process/frontend-points/pt-template1.json"
 
     file_in = open(input_json_file, "r")
-    
+
     # load data to json_data
     json_data = json.load(file_in)
 
     # output json state files
     point_count = 0
-    
+
     # points in set
     point_set = open_set + closed_set
     max_cost_node = max(point_set, key=lambda x:x.h)
@@ -126,7 +126,7 @@ def get_node_staus_json(state_count, open_set, closed_set, map):
     # json_data["source"]["data"]["geometry"]["coordinates"] = coordinates
     # file_out.write(json.dumps(json_data, sort_keys=True, use_decimal=True, indent=4, separators=(',', ': ')))
     # file_out.close()
-    
+
     # close input file
     file_in.close()
 
@@ -182,7 +182,7 @@ def get_path(end, map):
 def main():
     db_name = "routing"
     username = "tom"
-    password = "myPassword"  
+    password = "myPassword"
 
     # x1, y1 = 104.08175,30.67946
     # x2, y2 = 104.05346,30.67108
@@ -192,27 +192,27 @@ def main():
     except:
         print "commandline input error, should input x1, y1, x2, y2\n"
         exit(-1)
-    
+
     conn = pgr.connect_db(db_name, username, password)
     cur = conn.cursor()
 
     start_node_id = pgr.find_nearest_vertex_id(cur, x1, y1)
     end_node_id = pgr.find_nearest_vertex_id(cur, x2, y2)
-    
+
     map = get_map(cur)
 
     start_node = map.nodes[start_node_id-1]
     end_node = map.nodes[end_node_id-1]
-    
+
     map_initialize(end_node, map)
-    
+
     is_path_exist = astar(start_node, end_node, map)
 
     if is_path_exist:
         node_list = get_path(end_node, map)
         node_list = [elem.node_id for elem in node_list]
     node_list.reverse()
-    
+
     # path json
     input_json_file = "../data-process/frontend-path/path-template.json"
     output_json_file = "../data-process/frontend-path/astar-path.json"
@@ -226,7 +226,7 @@ def main():
         path_coordinates.append([node.lon, node.lat])
     json_data["source"]["data"]["geometry"]["coordinates"] = path_coordinates
     json_data["paint"]["line-width"] = 4
-    json_data["paint"]["line-color"] = "#000020"
+    json_data["paint"]["line-color"] = "#ef8783"
     file_out.write(json.dumps(json_data, sort_keys=True, use_decimal=True, indent=4, separators=(',', ': ')))
     file_out.close()
 

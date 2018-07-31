@@ -14,8 +14,51 @@ html
             -moz-box-shadow: 0px 0px 2px 1px rgba(100,100,100,0.75);
             box-shadow: 0px 0px 2px 1px rgba(100,100,100,0.75);
         }
+
+        .slidecontainer_my {
+            z-index: 3;
+            position: absolute;
+            top: 10px;
+            left: 640px;
+            width: 200px;
+            height: 80px;
+        }
+
+        /* The slider itself */
+        .slider_my {
+            -webkit-appearance: none;  /* Override default CSS styles */
+            appearance: none;
+            width: 100%; /* Full-width */
+            outline: none; /* Remove outline */
+            opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+            -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+            transition: opacity .2s;
+        }
+
+        /* Mouse-over effects */
+        .slider_my:hover {
+            opacity: 1; /* Fully shown on mouse-over */
+        }
+
+        /* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+        .slider_my::-webkit-slider-thumb {
+            -webkit-appearance: none; /* Override default look */
+            appearance: none;
+            width: 25px; /* Set a specific slider handle width */
+            height: 75px; /* Slider handle height */
+            background: #4CAF50; /* Green background */
+            cursor: pointer; /* Cursor on hover */
+        }
+
+        .slider_my::-moz-range-thumb {
+            width: 25px; /* Set a specific slider handle width */
+            height: 75px; /* Slider handle height */
+            background: #4CAF50; /* Green background */
+            cursor: pointer; /* Cursor on hover */
+        }
         #go-button { position: absolute; top: 10px; left: 330px; width: 50px; height: 80px; z-index: 2 }
         #draw-button { position: absolute; top: 10px; left: 400px; width: 100px; height: 80px; z-index: 2 }
+        #astar-button { position: absolute; top: 10px; left: 520px; width: 100px; height: 80px; z-index: 2 }
   body
     script(src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.2.0/mapbox-gl-geocoder.min.js')
     link(rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.2.0/mapbox-gl-geocoder.css' type='text/css')
@@ -26,6 +69,12 @@ html
         Go
     button(class="button", id="draw-button").
         Draw
+    button(class="button", id="astar-button").
+        A-star
+
+    div(class="slidecontainer_my")
+        input(type="range", min="1", max="100", value="50", class="slider_my", id="astar-range")
+
     script.
         function _fillData(layer, data) {
             var gpspoints = data.split("\n");
@@ -150,9 +199,18 @@ html
                 if (map.getLayer(obj.id)) {
                     console.log("remove");
                     map.removeLayer(obj.id);
-                    map.removeSource(obj.id)
+                    map.removeSource(obj.id);
                 }
                 map.addLayer(obj);
+            });
+        }
+
+        function _removeFromFolder(map, objs) {
+            objs.forEach(function(obj) {
+                if (map.getLayer(obj.id)) {
+                    map.removeLayer(obj.id);
+                    map.removeSource(obj.id);
+                }
             });
         }
 
@@ -282,6 +340,30 @@ html
                     console.log(data);
                     _drawFromFolder(map, data);
                 });
+            });
+
+            function sleep(milliseconds) {
+              var start = new Date().getTime();
+              for (var i = 0; i < 1e7; i++) {
+                if ((new Date().getTime() - start) > milliseconds){
+                  break;
+                }
+              }
+            }
+
+            batchidx = 0;
+            $("#astar-button").click(function(){
+                console.log('hheheheheheh');
+                var old_data = [];
+                //for (var i = 0; i < 10; i++) {
+                    $.post("/drawastarsbatch", {dir: "frontend-points", batch: batchidx}, function(data, status) {
+                        // console.log(data);
+                        _removeFromFolder(map, old_data);
+                        _drawFromFolder(map, data);
+                        old_data = data;
+                        batchidx = batchidx + 1;
+                    });
+                //}
             });
         });
 

@@ -54,10 +54,68 @@ router.post('/draw', function(req, res, next) {
         }
         valid_file_count = valid_file_count + 1;
       });
-      
+
       filenames.forEach(function(filename) {
         var oldfilename = filename;
         if (filename.split('.').pop() !== "json") {
+          return;
+        }
+        filename = path.join(__dirname, '../../data-process/' + req.body.dir + '/' + filename);
+        fs.readFile(filename, {encoding: 'utf-8'}, function (err, data) {
+          if (!err) {
+            console.log(filename);
+            obj = JSON.parse(data);
+            obj.id = oldfilename;
+            objs.push(obj);
+            if (objs.length == valid_file_count) {
+              console.log("send " + req.body.dir);
+              res.send(objs);
+            }
+          } else {
+            console.log(err);
+            res.status(404).send("Oops, something went wrong");
+          }
+        });
+      });
+    } else {
+      console.log(err);
+      throw err;
+      res.status(404).send("Oops, something went wrong");
+    }
+  });
+});
+
+router.post('/drawastarsbatch', function(req, res, next) {
+  var filePath = path.join(__dirname, '../../data-process/' + req.body.dir);
+  var batchidx = req.body.batch;
+
+
+  fs.readdir(filePath, function(err, filenames) {
+    if (!err) {
+      var objs = [];
+      var valid_file_count = 0;
+      filenames.forEach(function(filename) {
+        if (filename.split('.').pop() !== "json") {
+          return;
+        }
+        var check_filename_tmp = filename.split('-');
+        if (check_filename_tmp[0] === "astar"
+            && check_filename_tmp[1] === "pt"
+            && check_filename_tmp[2] === batchidx.toString()) {
+          valid_file_count = valid_file_count + 1;
+          console.log(valid_file_count);
+        }
+      });
+
+      filenames.forEach(function(filename) {
+        var oldfilename = filename;
+        if (filename.split('.').pop() !== "json") {
+          return;
+        }
+        var check_filename_tmp = filename.split('-');
+        if (check_filename_tmp[0] !== "astar"
+            || check_filename_tmp[1] !== "pt"
+            || check_filename_tmp[2] !== batchidx.toString()) {
           return;
         }
         filename = path.join(__dirname, '../../data-process/' + req.body.dir + '/' + filename);
@@ -102,7 +160,7 @@ router.post('/getpath', function(req, res, next) {
     args: [req.body.srclon, req.body.srclat, req.body.dstlon, req.body.dstlat]
   };
 
-  PythonShell.run("pgr_astar.py", options, function (err, results) {
+  PythonShell.run("astar_visualize.py", options, function (err, results) {
     if (err) {
       console.log('Error: python error ' + err);
       //res.status(404).send("Oh uh, something went wrong");
@@ -112,7 +170,7 @@ router.post('/getpath', function(req, res, next) {
     }
 
     // TODO call a python function with the two points as input
-    var filePath = path.join(__dirname, '../../data-process/frontend-path/astarpath.json');
+    var filePath = path.join(__dirname, '../../data-process/frontend-path/astar-path.json');
     // TODO need to check whether the file exist.
     fs.readFile(filePath, {encoding: 'utf-8'}, function(err,data){
       if (!err) {
@@ -126,7 +184,7 @@ router.post('/getpath', function(req, res, next) {
     });
   });
 
-  
+
 });
 
 module.exports = router;
