@@ -3,6 +3,7 @@ import psycopg2
 import pgr_utils as pgr
 import path2json as p2j
 import math
+import os
 import simplejson as json
 
 # take command input python pgr_astar.py x1 y1 x2 y2
@@ -54,9 +55,10 @@ def astar(start, goal, map):
     current = start
     open_set.append(start)
     state_count = 0 # state number for visualization
-    get_node_staus_json(state_count, open_set, closed_set, map)
+    get_node_staus_json(state_count, open_set, map)
     while open_set:
         current = min(open_set, key=lambda x:x.h+x.g)
+        state_nodes = []
         # print current.node_id
         if current == goal:
             return True
@@ -78,15 +80,17 @@ def astar(start, goal, map):
                 node.g = new_g
                 node.parent = current
                 open_set.append(node)
-        state_count = state_count + 1
-        get_node_staus_json(state_count, open_set, closed_set, map)
+                state_nodes.append(node)
+        if not state_nodes:
+            continue
+        else:
+            state_count = state_count + 1
+            get_node_staus_json(state_count, state_nodes, map)
 
-        # if state_count==81:
-        #     get_node_staus_json(state_count, open_set, closed_set, map)
     print "No path found!!!"
     return False
 
-def get_node_staus_json(state_count, open_set, closed_set, map):
+def get_node_staus_json(state_count, point_set, map):
     input_json_file = "../data-process/frontend-points/pt-template1.json"
 
     file_in = open(input_json_file, "r")
@@ -98,12 +102,11 @@ def get_node_staus_json(state_count, open_set, closed_set, map):
     point_count = 0
     
     # points in set
-    point_set = open_set + closed_set
     max_cost_node = max(point_set, key=lambda x:x.h)
     max_cost = max_cost_node.h
     # point in single file
     for point in point_set:
-        output_json_file = "../data-process/frontend-points/astar-pt-%d-%d.json" % (state_count, point_count)
+        output_json_file = "../data-process/frontend-astar/astar-pt-%d-%d.json" % (state_count, point_count)
         point_count = point_count + 1
         # name file out
         file_out = open(output_json_file, "w")
@@ -206,6 +209,11 @@ def main():
     
     map_initialize(end_node, map)
     
+    mydir = "../data-process/frontend-astar"
+    filelist = [ f for f in os.listdir(mydir) ]
+    for f in filelist:
+        os.remove(os.path.join(mydir, f))
+
     is_path_exist = astar(start_node, end_node, map)
 
     if is_path_exist:
