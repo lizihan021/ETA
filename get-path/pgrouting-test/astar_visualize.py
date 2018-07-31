@@ -79,8 +79,10 @@ def astar(start, goal, map):
                 node.parent = current
                 open_set.append(node)
         state_count = state_count + 1
-        if state_count==81:
-            get_node_staus_json(state_count, open_set, closed_set, map)
+        get_node_staus_json(state_count, open_set, closed_set, map)
+
+        # if state_count==81:
+        #     get_node_staus_json(state_count, open_set, closed_set, map)
     print "No path found!!!"
     return False
 
@@ -182,14 +184,14 @@ def main():
     username = "tom"
     password = "myPassword"  
 
-    x1, y1 = 104.08175,30.67946
-    x2, y2 = 104.05346,30.67108
-    # # get x, y from input
-    # try:
-    #     x1, y1, x2, y2 = sys.argv[1:]
-    # except:
-    #     print "commandline input error, should input x1, y1, x2, y2\n"
-    #     exit(-1)
+    # x1, y1 = 104.08175,30.67946
+    # x2, y2 = 104.05346,30.67108
+    # get x, y from input
+    try:
+        x1, y1, x2, y2 = sys.argv[1:]
+    except:
+        print "commandline input error, should input x1, y1, x2, y2\n"
+        exit(-1)
     
     conn = pgr.connect_db(db_name, username, password)
     cur = conn.cursor()
