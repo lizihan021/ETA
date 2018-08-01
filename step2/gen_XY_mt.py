@@ -59,7 +59,7 @@ START_DATE = 1			# generate Xs and Ys from 2016/11/START_DATE
 NUM_OF_DAYS = 30
 MAX_THREAD_NUM = 32
 MAX_NO_DATA_TIME = 1 	# unit is hour
-SPEED_SEL = "AVG_Q1_to_Q3" # "MEDIAN"
+SPEED_SEL = "MEDIAN" # "MEDIAN" or "AVG_Q1_to_Q3"
 
 def timestamp2time(timestamp):
 	"""
@@ -324,8 +324,8 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, uri):
 def gen_XY_for_all(argv):
 	# process input argv
 	argv += [None] * 11
-	x_rn 		= 9 	if argv[0] is None else int(argv[0])
-	x_cn 		= 9 	if argv[1] is None else int(argv[1])
+	x_rn 		= 7 	if argv[0] is None else int(argv[0])
+	x_cn 		= 7 	if argv[1] is None else int(argv[1])
 	y_len 		= 2 	if argv[2] is None else int(argv[2])
 	time_itv 	= 15 	if argv[3] is None else int(argv[3])
 	q_rate 		= 0.75 	if argv[4] is None else float(argv[4])
@@ -340,8 +340,8 @@ def gen_XY_for_all(argv):
 
 
 	# create directory to store results
-	dirname = "gen_XY_results_{x_rn}_{x_cn}_{y_len}_{time_itv}_{q_rate}".format(\
-		x_rn = x_rn, x_cn = x_cn, y_len = y_len, time_itv = time_itv, q_rate = q_rate)
+	dirname = "gen_XY_results_{x_rn}_{x_cn}_{y_len}_{time_itv}_{q_rate}_{SPEED_SEL}".format(\
+		x_rn = x_rn, x_cn = x_cn, y_len = y_len, time_itv = time_itv, q_rate = q_rate, SPEED_SEL = SPEED_SEL)
 	try:
 		os.makedirs(dirname)
 	except OSError as e:
