@@ -61,6 +61,17 @@ def unix2week(timelist):
         res = res + tmp2
     return res
 
+def mov_avg(plot_pred, max_num):
+    res = []
+    for i, num in enumerate(plot_pred):
+        start = max(0, i + 1 - max_num)
+        all_sum = 0
+        for tmp in plot_pred[start: (i+1)]:
+            all_sum = all_sum + tmp
+        res.append(all_sum / (i+1-start))
+    return res
+
 if __name__ =="__main__":
     #print impute_list([-1,-1,9.146,7.816,6.486,7.1706,7.8552,8.5398,9.2244], 10)
-    print unix2week([0,0,0,0,'2016-11-30 1:23:00','2016-11-30 1:23:00','2016-11-30 1:23:00','2016-11-30 1:23:00'])
+    #print unix2week([0,0,0,0,'2016-11-30 1:23:00','2016-11-30 1:23:00','2016-11-30 1:23:00','2016-11-30 1:23:00'])
+    print mov_avg([1,2,3,2,1,4,5,3,2], 2)
