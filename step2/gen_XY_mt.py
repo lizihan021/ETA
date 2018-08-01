@@ -53,11 +53,13 @@ import os, errno, sys
 import pickle
 import threading
 import time
+import numpy as np
 
 START_DATE = 1			# generate Xs and Ys from 2016/11/START_DATE
 NUM_OF_DAYS = 30
 MAX_THREAD_NUM = 32
 MAX_NO_DATA_TIME = 1 	# unit is hour
+SPEED_SEL = "MEDIAN" # "MEDIAN" or "AVG_Q1_to_Q3"
 
 def timestamp2time(timestamp):
 	"""
@@ -196,12 +198,31 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, uri):
 			end_t = start_t + 60 * time_itv
 
 			table_name = "edge{}_{}_{}".format(row_osm_id, row_s_osm, row_t_osm)
-			stmt = "SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY speed) FROM {table_name} WHERE timestamp >= {start_t} AND timestamp < {end_t}".format( \
-					table_name = table_name, start_t = start_t, end_t = end_t)
-			cur.execute(stmt)
 
-			# avg_speed can be None
-			avg_speed = cur.fetchone()[0]
+			if SPEED_SEL == "MEDIAN":
+				stmt = "SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY speed) FROM {table_name} WHERE timestamp >= {start_t} AND timestamp < {end_t}".format( \
+						table_name = table_name, start_t = start_t, end_t = end_t)
+				cur.execute(stmt)
+				# avg_speed can be None
+				avg_speed = cur.fetchone()[0]
+
+			elif SPEED_SEL == "AVG_Q1_to_Q3":
+				stmt = "SELECT speed FROM {table_name} WHERE timestamp >= {start_t} AND timestamp < {end_t}".format( \
+						table_name = table_name, start_t = start_t, end_t = end_t)
+				cur.execute(stmt)
+				speeds = []
+				for speed in cur:
+					speeds.append(speed[0])
+				if not speeds:
+					avg_speed = None
+				elif len(speeds) <= 2:
+					avg_speed = np.mean(speeds)
+				else:
+					speeds = sorted(speeds)
+					Q1, Q3 = np.percentile(speeds, [25, 75])
+					Q1_to_Q3 = [x for x in speeds if x >= Q1 and x <= Q3]
+					avg_speed = np.mean(Q1_to_Q3) 
+
 			row_speed.append(avg_speed)
 
 		row_speed = impute_list(row_speed, MAX_NO_DATA_TIME * 60 / time_itv)
@@ -303,8 +324,8 @@ def gen_XY_for_one(dirname, edge, gen_XY_params, rw_params, uri):
 def gen_XY_for_all(argv):
 	# process input argv
 	argv += [None] * 11
-	x_rn 		= 9 	if argv[0] is None else int(argv[0])
-	x_cn 		= 9 	if argv[1] is None else int(argv[1])
+	x_rn 		= 7 	if argv[0] is None else int(argv[0])
+	x_cn 		= 7 	if argv[1] is None else int(argv[1])
 	y_len 		= 2 	if argv[2] is None else int(argv[2])
 	time_itv 	= 15 	if argv[3] is None else int(argv[3])
 	q_rate 		= 0.75 	if argv[4] is None else float(argv[4])
@@ -319,8 +340,8 @@ def gen_XY_for_all(argv):
 
 
 	# create directory to store results
-	dirname = "gen_XY_results_{x_rn}_{x_cn}_{y_len}_{time_itv}_{q_rate}".format(\
-		x_rn = x_rn, x_cn = x_cn, y_len = y_len, time_itv = time_itv, q_rate = q_rate)
+	dirname = "gen_XY_results_{x_rn}_{x_cn}_{y_len}_{time_itv}_{q_rate}_{SPEED_SEL}".format(\
+		x_rn = x_rn, x_cn = x_cn, y_len = y_len, time_itv = time_itv, q_rate = q_rate, SPEED_SEL = SPEED_SEL)
 	try:
 		os.makedirs(dirname)
 	except OSError as e:
