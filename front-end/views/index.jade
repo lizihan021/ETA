@@ -252,7 +252,7 @@ html
 
         map.on('load', function() {
             mapDirections.on('route', function(){
-                // mapDirections.removeRoutes();
+                mapDirections.removeRoutes();
             });
             mapDirections.on('origin', function(){
                 srclat = mapDirections.getOrigin().geometry.coordinates[1];
