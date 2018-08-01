@@ -77,20 +77,24 @@ def train_road(filename, train_flag = True):
     predict_result = model.predict([x_test, timestamp_test], batch_size=BATCH_SIZE)
     # print predict_result
     # print y_test
-    plot_pred = [z[1] for z in predict_result[250:480]]
-    plot_y = [z[1] for z in y_test[250:480]]
+    plot_pred = [z[1] for z in predict_result[260:468]]
+    plot_y = [z[1] for z in y_test[260:468]]
     mavg = mov_avg(plot_pred, 9)
     err = 0;
     for i, tmp1 in enumerate(plot_y):
         err = err + abs(tmp1-mavg[i])
     print "mae: ", err / len(plot_y)
     x_points = xrange(len(plot_y))
+    x_points = [z/70.0 for z in x_points]
     # fig = plt.figure()
     # ax = fig.add_subplot(211)
     plt.plot(x_points, plot_y, 'b', label="actual")
     plt.plot(x_points, plot_pred, 'r', label="CNN predict")
-    plt.plot(x_points, mavg, 'y', label="moving avg")
+    plt.plot(x_points, mavg, 'g', label="moving avg")
     plt.legend()
+    plt.xlim([0,3])
+    plt.xlabel("Day")
+    plt.ylabel("Speed (m/s)")
     plt.show()
 
     print bcolors.WARNING + "Test error %: ", score[1] / np.mean(y_test), bcolors.ENDC
