@@ -26,6 +26,9 @@ train/data
 train/weights
 train/model.png
 train/useless
+train/gen_XY_results*
+train/best
+train/plot
 # Logs
 logs
 npm-debug.log*

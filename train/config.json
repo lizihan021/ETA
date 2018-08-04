@@ -1,5 +1,6 @@
 {
     "data_folder": "./data/",
+    "plot_folder": "./plot/",
     "X_dim": [9, 9],
     "Y_dim": 2,
     "time_dim": 206,
@@ -9,7 +10,7 @@
     	"dropout_dense": 0.5,
     	"batch_size": 180,
     	"optimizer": "adam",
-        "weights_folder": "weights/",
+        "weights_folder": "./weights/",
         "validation_split": 0.2,
         "cnn_epochs": 50,
     },

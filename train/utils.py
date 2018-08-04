@@ -62,13 +62,13 @@ def unix2week(timelist):
     return res
 
 def mov_avg(plot_pred, max_num):
-    res = []
-    for i, num in enumerate(plot_pred):
-        start = max(0, i + 1 - max_num)
+    res = plot_pred[:]
+    for i in range(max_num - 1, len(plot_pred) - 1):
+        start = i + 1 - max_num
         all_sum = 0
         for tmp in plot_pred[start: (i+1)]:
             all_sum = all_sum + tmp
-        res.append(all_sum / (i+1-start))
+        res[i + 1] = all_sum / max_num
     return res
 
 if __name__ =="__main__":

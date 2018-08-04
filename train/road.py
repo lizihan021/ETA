@@ -13,11 +13,11 @@ import random
 import pickle
 
 class RoadDataset:
-    def __init__(self, filename):
+    def __init__(self, folder_name, filename):
         # Load in all the data we need from disk
         self.max_time = get('X_dim')[1] + 10
         self.test_split = get('test_split')
-        self.filename = get('data_folder') + filename
+        self.filename = folder_name + filename
 
     def load_data(self):
         """
@@ -27,6 +27,8 @@ class RoadDataset:
         row_id, Xs, Ys, timestamp = pickle.load(f)
         f.close()
         assert len(Xs) == len(Ys)
+        if len(Xs) < 10:
+            raise ValueError('too few train')
         split = len(Xs) - int(len(Xs) * self.test_split)
         assert split > 0
         assert split < len(Xs)
@@ -36,10 +38,12 @@ class RoadDataset:
         x_test = [[[[x] for x in impute_list(y,self.max_time)] for y in z] for z in Xs[split:]]
         y_test = [impute_list(y,self.max_time) for y in Ys[split:]]
 
-        timestamp = [unix2week(x) for x in timestamp]
+        timestamp_onehot = [unix2week(x) for x in timestamp]
+        y_time = [x[2] for x in timestamp]
 
         return np.array(x_train), np.array(y_train), np.array(x_test), np.array(y_test), \
-               row_id[0:split], row_id[split:], np.array(timestamp[0:split]), np.array(timestamp[split:])
+               row_id[0:split], row_id[split:], np.array(timestamp_onehot[0:split]), \
+               np.array(timestamp_onehot[split:]), np.array(y_time[split:])
 
 if __name__ == '__main__':
     road = RoadDataset()

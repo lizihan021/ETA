@@ -360,8 +360,8 @@ html
                     _drawFromFolder(map, [data[1]]);
                     total_batches = data[0];
                     $('#astar-range').prop({'max': total_batches});
-                    console.log(parseFloat(Math.sqrt(total_batches) * 1.7));
-                    $('#time-button').text(parseFloat(total_batches /5.1));
+                    console.log(parseFloat(Math.floor(Math.sqrt(total_batches) * 2.5)));
+                    $('#time-button').text(parseInt(Math.floor(total_batches /4.1)) + " min");
                 });
             });
 
