@@ -5,6 +5,7 @@
     "Y_dim": 2,
     "time_dim": 206,
     "test_split": 0.3,
+    "thread_num": 32,
     "cnn": {
     	"dropout_cnn": 0.3,
     	"dropout_dense": 0.5,

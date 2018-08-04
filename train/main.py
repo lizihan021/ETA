@@ -3,9 +3,11 @@ from keras.callbacks import ModelCheckpoint
 from keras import backend as K
 from keras.utils import plot_model
 from road import RoadDataset
+import threading
 import os
 import pickle
 import sys
+import time
 from utils import get, mov_avg
 from road import RoadDataset
 from cnn import *
@@ -20,6 +22,7 @@ BATCH_SIZE = get('cnn.batch_size')
 CNN_EPOCHS = get('cnn.cnn_epochs')
 DATA_FOLDER = get('data_folder')
 PLOT_FOLDER = get('plot_folder')
+MAX_THREAD_NUM = get('thread_num')
 uri = "host=localhost port=5432 dbname=routing user=tom password=myPassword"
 np.set_printoptions(edgeitems=30)
 
@@ -43,10 +46,13 @@ def train(folder_name, train_flag = True):
     filenames = [x for _, _, x in os.walk(folder_name)]
     for i, filename in enumerate(filenames[0]):
         # define input data:
+        while (threading.active_count() > MAX_THREAD_NUM):
+            time.sleep(0.1)
         if filename.split(".")[-1] == 'p' and not os.path.isfile(WEIGHTS_FOLDER + "weights_" + filename):
             print "\n" + str(i) + ': ' + filename
             try:
-                train_road(filename, folder_name, train_flag)
+                th = threading.Thread(target=train_road, args=(filename, folder_name, train_flag))
+                th.start()
             except ValueError:
                 print bcolors.WARNING + "Too few sample" + bcolors.ENDC
                 continue
@@ -121,8 +127,8 @@ def train_road(filename, folder_name, train_flag = True):
 
 def create_table(timestamp_test):
     for timestamp in timestamp_test:
+        conn = psycopg2.connect(uri)
         try:
-            conn = psycopg2.connect(uri)
             stmt = '''CREATE TABLE time_{} (
                     osm_id bigint,
                     source_id bigint,
