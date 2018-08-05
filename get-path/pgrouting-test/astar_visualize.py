@@ -18,11 +18,12 @@ class Node:
         self.h = 0
 
 class Edge:
-    def __init__(self, id, s, t, c):
+    def __init__(self, id, s, t, c, speed):
         self.edge_id = id
         self.source = s
         self.target = t
         self.cost = c
+        self.speed = speed
 
 class Map:
     def __init__(self, edges, nodes):
@@ -51,9 +52,19 @@ def cost_of_edge(source, target, map):
     print "error cost"
 
 def h(source, goal, map):
-    lon_diff = source.lon - goal.lon
-    lat_diff = source.lat - goal.lat
-    return math.sqrt(lon_diff*lon_diff + lat_diff*lat_diff)
+    max_speed = 110 / 3.6
+    R = 6373000
+    lat1 = math.radians(source.lat)
+    lon1 = math.radians(source.lon)
+    lat2 = math.radians(goal.lat)
+    lon2 = math.radians(goal.lon)
+
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = (math.sin(dlat/2))**2 + math.cos(lat1) * math.cos(lat2) * (math.sin(dlon/2))**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    distance = R * c
+    return distance / max_speed
 
 def astar(start, goal, map):
     closed_set = []
@@ -153,15 +164,34 @@ def cost_to_rgb_code(cost, max_cost):
     color = '#%02X%02X%02X' % (r, g, b)
     return color
 
-def get_map(cur):
+def get_map(cur, t):
+    # get average speed percentage of max speed for all edges
+    sql = "SELECT predict_speed FROM time_%s WHERE osm_id=-1" % (t)
+    cur.execute(sql)
+    row = cur.fetchall()[0]
+    avg_speed_percent = row[0]
+    # print avg_speed_percent
     # get all edges
-    sql = "SELECT gid, source, target, cost FROM ways"
+    sql = "SELECT gid, osm_id, source, target, maxspeed_forward, length_m FROM ways"
     cur.execute(sql)
     rows = cur.fetchall()
     edges = []
+    # has = 0
+    # donthave = 0
+    # print len(rows)
     for row in rows:
-        [edge_id, source, target, cost] = row[0:4]
-        edges.append(Edge(edge_id, source, target, cost))
+        [edge_id, edge_osm_id, source, target, maxspeed_forward, length_m] = row[0:9]
+        sql = "SELECT predict_speed FROM time_%s WHERE osm_id=%s" % (t, edge_osm_id)
+        cur.execute(sql)
+        speed_rows = cur.fetchall()
+        if not speed_rows:
+            # donthave += 1
+            speed = abs(maxspeed_forward) * avg_speed_percent
+        else:
+            # has += 1
+            speed = speed_rows[0][0]
+        cost = length_m / speed
+        edges.append(Edge(edge_id, source, target, cost, speed))
     # get all nodes
     sql = "SELECT id, lon, lat FROM ways_vertices_pgr"
     cur.execute(sql)
@@ -200,8 +230,9 @@ def main():
     # get x, y from input
     try:
         x1, y1, x2, y2 = sys.argv[1:]
+        t = 1480505400
     except:
-        print "commandline input error, should input x1, y1, x2, y2\n"
+        print "commandline input error, should input x1, y1, x2, y2, t\n"
         exit(-1)
 
     conn = pgr.connect_db(db_name, username, password)
@@ -209,18 +240,18 @@ def main():
 
     start_node_id = pgr.find_nearest_vertex_id(cur, x1, y1)
     end_node_id = pgr.find_nearest_vertex_id(cur, x2, y2)
-    map = get_map(cur)
-
+    map = get_map(cur, t)
+    print "Finish map"
     start_node = map.nodes[start_node_id-1]
     end_node = map.nodes[end_node_id-1]
 
     map_initialize(end_node, map)
-    
+    print "Finish setup"
     mydir = "../data-process/frontend-astar"
     filelist = [ f for f in os.listdir(mydir) ]
     for f in filelist:
         os.remove(os.path.join(mydir, f))
-
+    print "Finish delete"
     is_path_exist = astar(start_node, end_node, map)
     node_list = []
     if is_path_exist:
