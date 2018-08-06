@@ -18,12 +18,13 @@ class Node:
         self.h = 0
 
 class Edge:
-    def __init__(self, id, s, t, c, speed):
+    def __init__(self, id, s, t, c, speed, l):
         self.edge_id = id
         self.source = s
         self.target = t
         self.cost = c
         self.speed = speed
+        self.length_m = l
 
 class Map:
     def __init__(self, edges, nodes):
@@ -42,6 +43,7 @@ def neighbor(node, map):
     for id in neighbor_id_set:
         neighbor_set.append(map.nodes[id-1])
     return neighbor_set
+
 def cost_of_edge(source, target, map):
     for edge in map.edges:
         if edge.source == source.node_id and edge.target == target.node_id:
@@ -52,19 +54,25 @@ def cost_of_edge(source, target, map):
     print "error cost"
 
 def h(source, goal, map):
-    max_speed = 110 / 3.6
-    R = 6373000
-    lat1 = math.radians(source.lat)
-    lon1 = math.radians(source.lon)
-    lat2 = math.radians(goal.lat)
-    lon2 = math.radians(goal.lon)
+    lat_diff = source.lat - goal.lat
+    lon_diff = source.lon - goal.lon
+    return math.sqrt(lat_diff*lat_diff+lon_diff*lon_diff)
+# def h(source, goal, map):
+#     max_speed = 110 / 3.6
+#     R = 6373000
+#     lat1 = math.radians(source.lat)
+#     lon1 = math.radians(source.lon)
+#     lat2 = math.radians(goal.lat)
+#     lon2 = math.radians(goal.lon)
 
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-    a = (math.sin(dlat/2))**2 + math.cos(lat1) * math.cos(lat2) * (math.sin(dlon/2))**2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-    distance = R * c
-    return distance / max_speed
+#     dlon = lon2 - lon1
+#     dlat = lat2 - lat1
+#     a = (math.sin(dlat/2))**2 + math.cos(lat1) * math.cos(lat2) * (math.sin(dlon/2))**2
+#     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+#     distance = R * c
+#     return distance / max_speed
+
+
 
 def astar(start, goal, map):
     closed_set = []
@@ -139,16 +147,6 @@ def get_node_staus_json(state_count, state_nodes, point_set, map):
         file_out.write(json.dumps(json_data, sort_keys=True, use_decimal=True, indent=4, separators=(',', ': ')))
         file_out.close()
 
-    # # all points in a file
-    # output_json_file = "../data-process/frontend-points/astar-pt-%d.json" % (state_count)
-    # file_out = open(output_json_file, "w")
-    # coordinates = []
-    # for point in point_set:
-    #     coordinates.append([point.lon, point.lat])
-    # json_data["source"]["data"]["geometry"]["coordinates"] = coordinates
-    # file_out.write(json.dumps(json_data, sort_keys=True, use_decimal=True, indent=4, separators=(',', ': ')))
-    # file_out.close()
-
     # close input file
     file_in.close()
 
@@ -172,26 +170,23 @@ def get_map(cur, t):
     avg_speed_percent = row[0]
     # print avg_speed_percent
     # get all edges
-    sql = "SELECT gid, osm_id, source, target, maxspeed_forward, length_m FROM ways"
+    sql = "SELECT gid, osm_id, source, target, maxspeed_forward, length_m, cost FROM ways"
     cur.execute(sql)
     rows = cur.fetchall()
     edges = []
-    # has = 0
-    # donthave = 0
     # print len(rows)
     for row in rows:
-        [edge_id, edge_osm_id, source, target, maxspeed_forward, length_m] = row[0:9]
-        sql = "SELECT predict_speed FROM time_%s WHERE osm_id=%s" % (t, edge_osm_id)
-        cur.execute(sql)
-        speed_rows = cur.fetchall()
-        if not speed_rows:
-            # donthave += 1
-            speed = abs(maxspeed_forward) * avg_speed_percent
-        else:
-            # has += 1
-            speed = speed_rows[0][0]
-        cost = length_m / speed
-        edges.append(Edge(edge_id, source, target, cost, speed))
+        [edge_id, edge_osm_id, source, target, maxspeed_forward, length_m, cost] = row[0:7]
+        # sql = "SELECT predict_speed FROM time_%s WHERE osm_id=%s" % (t, edge_osm_id)
+        # cur.execute(sql)
+        # speed_rows = cur.fetchall()
+        # if not speed_rows:
+        #     speed = abs(maxspeed_forward) * avg_speed_percent / 3.6
+        # else:
+        #     speed = speed_rows[0][0]
+        # cost = length_m / speed
+        speed = abs(maxspeed_forward) * avg_speed_percent / 3.6
+        edges.append(Edge(edge_id, source, target, cost, speed, length_m))
     # get all nodes
     sql = "SELECT id, lon, lat FROM ways_vertices_pgr"
     cur.execute(sql)
@@ -211,14 +206,22 @@ def map_initialize(end_node, map):
         node.h = h(node, end_node, map)
 
 def get_path(end, map):
+    t = 0
     path = []
     current = end
     while current.parent!=None:
+        edges = map.edges
+        for edge in edges:
+            if edge.source == current.node_id and edge.target == current.parent.node_id:
+                edge_time = edge.length_m / edge.speed
+            else:
+                if edge.target == current.node_id and edge.source == current.parent.node_id:
+                    edge_time = edge.length_m / edge.speed
         path.append(current)
         current = current.parent
+        t += edge_time
     path.append(current)
-    return path
-
+    return path, t
 
 def main():
     db_name = "routing"
@@ -255,10 +258,10 @@ def main():
     is_path_exist = astar(start_node, end_node, map)
     node_list = []
     if is_path_exist:
-        node_list = get_path(end_node, map)
+        node_list, total_time = get_path(end_node, map)
         node_list = [elem.node_id for elem in node_list]
         node_list.reverse()
-
+        print round(total_time/60)
     # path json
     input_json_file = "../data-process/frontend-path/path-template.json"
     output_json_file = "../data-process/frontend-path/astar-path.json"
