@@ -55,7 +55,8 @@ html
         #go-button { position: absolute; top: 10px; left: 330px; width: 50px; height: 80px; z-index: 2 }
         #draw-button { position: absolute; top: 10px; left: 400px; width: 100px; height: 80px; z-index: 2 }
         #astar-button { position: absolute; top: 40px; left: 520px; width: 135px; height: 50px; z-index: 2 }
-        #time-button { position: absolute; top: 40px; left: 700px; width: 135px; height: 50px; z-index: 2 }
+        #auto-astar { position: absolute; top: 10px; left: 675px; width: 100px; height: 80px; z-index: 2 }
+        #time-button { position: absolute; top: 10px; left: 795px; width: 135px; height: 50px; z-index: 2 }
   body
     script(src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.2.0/mapbox-gl-geocoder.min.js')
     link(rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.2.0/mapbox-gl-geocoder.css' type='text/css')
@@ -69,6 +70,9 @@ html
         Draw
     button(class="button", id="astar-button").
         A-star
+
+    button(class="button", id="auto-astar").
+        Auto A*
     button(class="button", id="time-button").
         Time
 
@@ -386,5 +390,21 @@ html
                         old_batchidx = batchidx;
                     });
                 //}
+            });
+
+            $("#auto-astar").click(function(){
+                // for (var i = 0; i < total_batches; i++) {
+                    var i = 0;
+                    old_data = []
+                    var interval = setInterval(function(){
+                        console.log('hello\n');
+                        $.post("/drawastarssingle", {dir: "frontend-astar", batch: i}, function(data, status) {
+                            _drawFromFolder(map, data);
+                            old_data.push(data);
+                        });
+                        i = i + 1;
+                        if (i > total_batches) clearInterval(interval);
+                    }, 300);
+                // }
             });
         });
