@@ -55,7 +55,9 @@ html
         #go-button { position: absolute; top: 10px; left: 330px; width: 50px; height: 80px; z-index: 2 }
         #draw-button { position: absolute; top: 10px; left: 400px; width: 100px; height: 80px; z-index: 2 }
         #astar-button { position: absolute; top: 40px; left: 520px; width: 135px; height: 50px; z-index: 2 }
-        #time-button { position: absolute; top: 40px; left: 700px; width: 135px; height: 50px; z-index: 2 }
+        #auto-astar { position: absolute; top: 10px; left: 675px; width: 100px; height: 80px; z-index: 2 }
+        #time-text-box { position: absolute; top: 150px; left: 10px; width: 300px; height: 110px; opacity: 0.9; z-index: 2 }
+
   body
     script(src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.2.0/mapbox-gl-geocoder.min.js')
     link(rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.2.0/mapbox-gl-geocoder.css' type='text/css')
@@ -69,12 +71,19 @@ html
         Draw
     button(class="button", id="astar-button").
         A-star
-    button(class="button", id="time-button").
-        Time
+
+    button(class="button", id="auto-astar").
+        Auto A*
+
 
     div(class="slidecontainer")
         input(type="range", min="0", max="100", value="0", class="slider", id="astar-range")
 
+
+    div(class='pad1 col4 fill-purple', id="time-text-box")
+        div(class='pad2 fill-lighten2')
+            h2(class='fancy', id="time-text").
+                ETA: ...
 
     script.
         function _fillData(layer, data) {
@@ -271,6 +280,7 @@ html
                 if (map.getLayer("astarpath.json")) {
                     map.removeLayer("astarpath.json");
                     map.removeSource("astarpath.json");
+                    $('#time-text').text("ETA: ...");
                 }
             });
             mapDirections.on('destination', function(){
@@ -282,6 +292,7 @@ html
                 if (map.getLayer("astarpath.json")) {
                     map.removeLayer("astarpath.json");
                     map.removeSource("astarpath.json");
+                    $('#time-text').text("ETA: ...");
                 }
             });
         //     geocoderStart.on('result', function(ev) {
@@ -361,7 +372,7 @@ html
                     total_batches = data[0];
                     $('#astar-range').prop({'max': total_batches});
                     console.log(parseFloat(Math.floor(Math.sqrt(total_batches) * 2.5)));
-                    $('#time-button').text(parseInt(Math.floor(total_batches /4.1)) + " min");
+                    $('#time-text').text("ETA: " + parseInt(Math.floor(total_batches /4.1)) + " min");
                 });
             });
 
@@ -386,5 +397,21 @@ html
                         old_batchidx = batchidx;
                     });
                 //}
+            });
+
+            $("#auto-astar").click(function(){
+                // for (var i = 0; i < total_batches; i++) {
+                    var i = 0;
+                    old_data = []
+                    var interval = setInterval(function(){
+                        console.log('hello\n');
+                        $.post("/drawastarssingle", {dir: "frontend-astar", batch: i}, function(data, status) {
+                            _drawFromFolder(map, data);
+                            old_data.push(data);
+                        });
+                        i = i + 1;
+                        if (i > total_batches) clearInterval(interval);
+                    }, 150);
+                // }
             });
         });
