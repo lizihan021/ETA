@@ -19,7 +19,7 @@ html
         .slidecontainer {
             position: absolute; top: 10px; left: 520px; width: 135px; height: 10px;
             border-radius: 5px;
-            background: #4d86b9;
+            background: #fbb03b;
             z-index: 3;
         }
 
@@ -27,7 +27,7 @@ html
             position: absolute; top: 0px;
             -webkit-appearance: none;
             border-radius: 5px;
-            background: #4d86b9;
+            background: #fbb03b;
             outline: none;
             opacity: 0.7;
             -webkit-transition: .2s;
@@ -56,6 +56,7 @@ html
         #draw-button { position: absolute; top: 10px; left: 400px; width: 100px; height: 80px; z-index: 2 }
         #astar-button { position: absolute; top: 40px; left: 520px; width: 135px; height: 50px; z-index: 2 }
         #auto-astar { position: absolute; top: 10px; left: 675px; width: 100px; height: 80px; z-index: 2 }
+        #heatmap-button { position: absolute; top: 10px; left: 795px; width: 100px; height: 80px; z-index: 2 }
         #time-text-box { position: absolute; top: 150px; left: 10px; width: 300px; height: 110px; opacity: 0.9; z-index: 2 }
 
   body
@@ -65,15 +66,18 @@ html
     link(rel='stylesheet', href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.3/mapbox-gl-directions.css', type='text/css')
 
     div(id='map')
-    button(class="button", id="go-button").
+    button(class="button fill-red", id="go-button").
         Go
     button(class="button", id="draw-button").
         Draw
-    button(class="button", id="astar-button").
+    button(class="button fill-mustard", id="astar-button").
         A-star
 
-    button(class="button", id="auto-astar").
+    button(class="button fill-mustard", id="auto-astar").
         Auto A*
+
+    button(class="button fill-orange", id="heatmap-button").
+        Heatmap
 
 
     div(class="slidecontainer")
@@ -413,5 +417,14 @@ html
                         if (i > total_batches) clearInterval(interval);
                     }, 150);
                 // }
+            });
+
+            $("#heatmap-button").click(function(){
+                //for (var i = 0; i < 10; i++) {
+                    $.post("/draw", {dir: "frontend-heatmap"}, function(data, status) {
+                        console.log("draw points " + data.length + " files");
+                        _drawFromFolder(map, data);
+                    });
+                //}
             });
         });
