@@ -262,6 +262,10 @@ def main():
         node_list = [elem.node_id for elem in node_list]
         node_list.reverse()
         print round(total_time/60)
+        path_time = open("../data-process/path_time", "w")
+        path_time.write("%s\n"%(round(total_time/60))) 
+        path_time.close()
+
     # path json
     input_json_file = "../data-process/frontend-path/path-template.json"
     output_json_file = "../data-process/frontend-path/astar-path.json"
