@@ -8,7 +8,7 @@ Usage: python traffic_vis.py
 import pickle
 import json
 import psycopg2
-import os, errno, sys
+import os, errno, sys, shutil
 
 NUM_EDGE_TO_SHOW = 21
 URI = "host=localhost port=5432 dbname=routing user=tom password=myPassword"
@@ -28,15 +28,16 @@ def select_timestamp(conn):
 	# print(len(tablenames))
 	max_row = 0
 	max_tablename = ""
+	limit = 1000
 	for name in tablenames:
 		stmt = "SELECT count(*) FROM {table_name};".format(table_name = name)
 		cur.execute(stmt)
 		row = cur.fetchone()
-		if (row[0] > max_row):
+		if (row[0] > max_row and row[0] <= limit):
 			max_row = row[0]
 			max_tablename = name
-	# print(max_row)
-	# print(max_tablename)
+	print(max_row)
+	print(max_tablename)
 	return max_tablename
 
 
@@ -45,6 +46,20 @@ def traffic_convert(dirname, conn):
 	stmt = "SELECT * FROM {table_name}".format(table_name = select_timestamp(conn))
 	cur.execute(stmt)
 	rows = cur.fetchall()
+	max_speed_rate = 0
+	for row in rows:
+		osm_id = row[0]
+		source_osm = row[1]
+		target_osm = row[2]
+		predicted_speed = row[3]
+		if (osm_id == -1):
+			break
+		max_speed = get_maxspeed_forward(osm_id, source_osm, target_osm, conn)
+		speed_rate = predicted_speed / max_speed
+		if (speed_rate > max_speed_rate):
+			max_speed_rate = speed_rate
+	print(max_speed_rate)
+
 	for row in rows:
 		osm_id = row[0]
 		source_osm = row[1]
@@ -76,7 +91,9 @@ def traffic_convert(dirname, conn):
 
 		res["paint"] = paint = {}
 
-		paint["line-color"] = get_color(predicted_speed)
+		max_speed = get_maxspeed_forward(osm_id, source_osm, target_osm, conn)
+
+		paint["line-color"] = get_color(predicted_speed / max_speed * 60, max_speed_rate) # a naive approximation way
 		paint["line-width"] = 3
 
 		fname = dirname + "/{}_{}_{}.json".format(osm_id, source_osm, target_osm)
@@ -109,7 +126,48 @@ def get_coord(osm_id, source_osm, target_osm, conn):
 		coord.append([float(lon_str), float(lat_str)])
 	return coord
 
-def get_color(predicted_speed):
+def get_maxspeed_forward(osm_id, source_osm, target_osm, conn):
+	cur = conn.cursor()
+	stmt = "SELECT maxspeed_forward FROM {table_name} \
+			WHERE osm_id = {osm_id} AND source_osm = {source_osm} AND target_osm = {target_osm}".format( \
+			table_name = TABLE_NAME, osm_id = osm_id, source_osm = source_osm, target_osm = target_osm)
+	cur.execute(stmt)
+	row = cur.fetchone()
+	if row is None:
+		stmt = "SELECT maxspeed_forward FROM {table_name} \
+			WHERE osm_id = {osm_id} AND source_osm = {source_osm} AND target_osm = {target_osm}".format( \
+			table_name = TABLE_NAME, osm_id = osm_id, source_osm = target_osm, target_osm = source_osm)
+		cur.execute(stmt)
+		return cur.fetchone()[0]
+	else:
+		return row[0]
+
+def get_color(predicted_speed, max_speed):
+	# print(predicted_speed)
+	# print(predicted_speed / max_speed)
+	# if predicted_speed / max_speed > 0.92:
+	# 	return "#00FF00"
+	# if predicted_speed / max_speed > 0.84:
+	# 	return "#32FF00"
+	# if predicted_speed / max_speed > 0.76:
+	# 	return "#65FF00"
+	# if predicted_speed / max_speed > 0.68:
+	# 	return "#99FF00"
+	# if predicted_speed / max_speed > 0.60:
+	# 	return "#CCFF00"
+	# if predicted_speed / max_speed > 0.52:
+	# 	return "#FFFF00"
+	# if predicted_speed / max_speed > 0.44:
+	# 	return "#FFCC00"
+	# if predicted_speed / max_speed > 0.36:
+	# 	return "#FF9900"
+	# if predicted_speed / max_speed > 0.28:
+	# 	return "#FF6600"
+	# if predicted_speed / max_speed > 0.20:
+	# 	return "#FF3200"
+	# if predicted_speed / max_speed > 0.12:
+	# 	return "#FF0000"
+	# return "#FF0000"
 	if predicted_speed > 11:
 		return "#00FF00"
 	if predicted_speed > 10:
@@ -188,6 +246,8 @@ if __name__ == "__main__":
 	conn = psycopg2.connect(URI)
 
 	dirname = "frontend-heatmap"
+	if (os.path.exists(dirname)):
+		shutil.rmtree(dirname)
 	try:
 		os.makedirs(dirname)
 	except OSError as e:
