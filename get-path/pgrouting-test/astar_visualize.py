@@ -53,24 +53,24 @@ def cost_of_edge(source, target, map):
             return edge.cost
     print "error cost"
 
-def h(source, goal, map):
-    lat_diff = source.lat - goal.lat
-    lon_diff = source.lon - goal.lon
-    return math.sqrt(lat_diff*lat_diff+lon_diff*lon_diff)
-# def h(source, goal, map):
-#     max_speed = 110 / 3.6
-#     R = 6373000
-#     lat1 = math.radians(source.lat)
-#     lon1 = math.radians(source.lon)
-#     lat2 = math.radians(goal.lat)
-#     lon2 = math.radians(goal.lon)
+# def h(source, goal, map, avg_speed_percent):
+#     lat_diff = source.lat - goal.lat
+#     lon_diff = source.lon - goal.lon
+#     return math.sqrt(lat_diff*lat_diff+lon_diff*lon_diff)
+def h(source, goal, map, avg_speed_percent):
+    max_speed = 110 * avg_speed_percent / 3.6
+    R = 6373000
+    lat1 = math.radians(source.lat)
+    lon1 = math.radians(source.lon)
+    lat2 = math.radians(goal.lat)
+    lon2 = math.radians(goal.lon)
 
-#     dlon = lon2 - lon1
-#     dlat = lat2 - lat1
-#     a = (math.sin(dlat/2))**2 + math.cos(lat1) * math.cos(lat2) * (math.sin(dlon/2))**2
-#     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-#     distance = R * c
-#     return distance / max_speed
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = (math.sin(dlat/2))**2 + math.cos(lat1) * math.cos(lat2) * (math.sin(dlon/2))**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    distance = R * c
+    return distance / max_speed
 
 
 
@@ -177,15 +177,15 @@ def get_map(cur, t):
     # print len(rows)
     for row in rows:
         [edge_id, edge_osm_id, source, target, maxspeed_forward, length_m, cost] = row[0:7]
-        # sql = "SELECT predict_speed FROM time_%s WHERE osm_id=%s" % (t, edge_osm_id)
-        # cur.execute(sql)
-        # speed_rows = cur.fetchall()
-        # if not speed_rows:
-        #     speed = abs(maxspeed_forward) * avg_speed_percent / 3.6
-        # else:
-        #     speed = speed_rows[0][0]
-        # cost = length_m / speed
-        speed = abs(maxspeed_forward) * avg_speed_percent / 3.6
+        sql = "SELECT predict_speed FROM time_%s WHERE osm_id=%s" % (t, edge_osm_id)
+        cur.execute(sql)
+        speed_rows = cur.fetchall()
+        if not speed_rows:
+            speed = abs(maxspeed_forward) * avg_speed_percent / 3.6
+        else:
+            speed = speed_rows[0][0]
+        cost = length_m / speed
+        # speed = abs(maxspeed_forward) * avg_speed_percent / 3.6
         edges.append(Edge(edge_id, source, target, cost, speed, length_m))
     # get all nodes
     sql = "SELECT id, lon, lat FROM ways_vertices_pgr"
@@ -199,11 +199,11 @@ def get_map(cur, t):
     map = Map(edges, nodes)
     # print len(map.edges), len(map.nodes)
     # return the map
-    return map
+    return map, avg_speed_percent
 
-def map_initialize(end_node, map):
+def map_initialize(end_node, map, avg_speed_percent):
     for node in map.nodes:
-        node.h = h(node, end_node, map)
+        node.h = h(node, end_node, map, avg_speed_percent)
 
 def get_path(end, map):
     t = 0
@@ -243,12 +243,12 @@ def main():
 
     start_node_id = pgr.find_nearest_vertex_id(cur, x1, y1)
     end_node_id = pgr.find_nearest_vertex_id(cur, x2, y2)
-    map = get_map(cur, t)
+    map, avg_speed_percent = get_map(cur, t)
     print "Finish map"
     start_node = map.nodes[start_node_id-1]
     end_node = map.nodes[end_node_id-1]
 
-    map_initialize(end_node, map)
+    map_initialize(end_node, map, avg_speed_percent)
     print "Finish setup"
     mydir = "../data-process/frontend-astar"
     filelist = [ f for f in os.listdir(mydir) ]
